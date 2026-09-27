@@ -20,6 +20,6 @@ jobs:
       - uses: actions/checkout@v4
       - name: GhostDeps scan
         continue-on-error: true
-        uses: rowkavdev/ghostdeps/packages/action@dedc125c3788fa27c2023349570c1cbf3a609de2
+        uses: rowkavdev/ghostdeps/packages/action@6250d838162aada49cf93b0144e3d8f4f57109bb
         with:
           path: "."
