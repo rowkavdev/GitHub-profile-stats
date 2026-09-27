@@ -17,7 +17,9 @@ jobs:
   ghostdeps:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
       - name: GhostDeps scan
         continue-on-error: true
         uses: rowkavdev/ghostdeps/packages/action@8b1e0cb1e2e0460f4761040c6af7444c488dae76
