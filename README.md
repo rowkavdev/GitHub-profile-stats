@@ -20,7 +20,7 @@ Free, real-time GitHub stat cards, badges, and charts -- drop a URL into your RE
 
 **Standard card**
 
-[![](https://ghstats.dev/api/card?username=rowkav09&theme=tokyonight)](https://github.com/rowkavdev/GitHub-profile-stats)
+[![](https://ghstats.dev/api/card?username=rowkav09&theme=tokyonight&org=rowkavdev)](https://github.com/rowkavdev/GitHub-profile-stats)
 
 ```
 [![](https://ghstats.dev/api/card?username=YOUR_USERNAME&theme=tokyonight)](https://github.com/rowkavdev/GitHub-profile-stats)
