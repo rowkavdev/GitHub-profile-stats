@@ -22,6 +22,6 @@ jobs:
           persist-credentials: false
       - name: GhostDeps scan
         continue-on-error: true
-        uses: rowkavdev/ghostdeps/packages/action@8b1e0cb1e2e0460f4761040c6af7444c488dae76
+        uses: rowkavdev/ghostdeps/packages/action@39ca6d615ad40f8acc1b4ca324dd80de18477f7a
         with:
           path: "."
