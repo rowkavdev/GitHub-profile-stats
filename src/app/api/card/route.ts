@@ -4,6 +4,7 @@ import { renderCard, renderErrorCard } from "@/lib/svg";
 import { resolveTheme } from "@/lib/themes/themes";
 import { sanitizeUsername, sanitizeHexParam } from "@/lib/sanitize";
 import { getCacheHeaders } from "@/lib/cache";
+import { trackUser } from "@/lib/tracking";
 
 export const dynamic = "force-dynamic";
 
@@ -72,10 +73,10 @@ export async function GET(request: NextRequest) {
   try {
     const extraOwners = parseExtraOwners(params.get("orgs"), username);
     const stats = await fetchGitHubStats(username, allTime, extraOwners);
-    return new Response(renderCard(stats, theme, options), {
-      status: 200,
-      headers,
-    });
+    const svg = renderCard(stats, theme, options);
+    // A counter failure must not turn a successfully rendered card into an error.
+    try { await trackUser(username); } catch {}
+    return new Response(svg, { status: 200, headers });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "An unexpected error occurred.";
