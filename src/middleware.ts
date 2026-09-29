@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Redis } from "@upstash/redis";
+import { canonicalCardUrl } from "@/lib/card-query";
 
 export const config = {
   matcher: "/api/card",
 };
 
 export async function middleware(request: NextRequest) {
+  const canonical = canonicalCardUrl(request.nextUrl);
+  if (canonical) return NextResponse.redirect(canonical, 307);
   const username = request.nextUrl.searchParams.get("username")?.toLowerCase();
 
   if (username) {
