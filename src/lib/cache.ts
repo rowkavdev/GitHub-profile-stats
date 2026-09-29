@@ -74,5 +74,7 @@ export function getCacheHeaders(profileName: CacheProfileName): Record<string, s
 }
 
 export function getMiniMetricCacheProfile(metric: string): CacheProfileName {
-  return MINI_METRIC_PROFILES[metric as MiniMetricKey] ?? "default";
+  return Object.hasOwn(MINI_METRIC_PROFILES, metric)
+    ? MINI_METRIC_PROFILES[metric as MiniMetricKey]
+    : "default";
 }
