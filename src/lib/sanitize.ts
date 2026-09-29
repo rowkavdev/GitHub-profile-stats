@@ -4,6 +4,9 @@
  */
 export function escapeXml(str: string): string {
   return str
+    // XML 1.0 permits tab, LF and CR, but not other C0 controls,
+    // unmatched surrogate code units, or U+FFFE/U+FFFF.
+    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\ufffe\uffff]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/g, "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
