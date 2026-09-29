@@ -174,7 +174,8 @@ export function renderProfileCard(data: ProfileCardData, options: ProfileCardOpt
 
 export function resolveProfileCardOptions(params: URLSearchParams): ProfileCardOptions {
   const type = PROFILE_CARD_TYPES.includes(params.get("type") as ProfileCardType) ? params.get("type") as ProfileCardType : "repo";
-  const preset = PROFILE_THEMES[params.get("theme") || "github"] || PROFILE_THEMES.github;
+  const themeName = params.get("theme") || "github";
+  const preset = Object.hasOwn(PROFILE_THEMES, themeName) ? PROFILE_THEMES[themeName] : PROFILE_THEMES.github;
   const custom = (key: keyof ProfileCardTheme) => sanitizeHexParam(params.get(key)) || preset[key];
   const compact = type === "compact";
   return {

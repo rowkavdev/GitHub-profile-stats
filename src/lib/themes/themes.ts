@@ -11,7 +11,7 @@ export function resolveTheme(
     border_color?: string;
   },
 ): ThemeConfig {
-  const base = themes[themeName] ?? themes.default;
+  const base = Object.hasOwn(themes, themeName) ? themes[themeName] : themes.default;
   return {
     ...base,
     bg: overrides.bg ? `#${overrides.bg}` : base.bg,
