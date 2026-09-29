@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
   const username = sanitizeUsername(rawUsername);
 
   const metricKey = (params.get("metric") ?? "stars").toLowerCase();
-  const metric = METRICS[metricKey] ?? METRICS.stars;
+  const metric = Object.hasOwn(METRICS, metricKey) ? METRICS[metricKey] : METRICS.stars;
   const allTime = params.get("alltime") === "true";
 
   const themeName = params.get("theme") ?? "default";
