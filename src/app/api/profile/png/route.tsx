@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
 import { fetchGitHubStats, parseExtraOwners } from "@/lib/github";
 import { sanitizeUsername } from "@/lib/sanitize";
+import { getCacheHeaders } from "@/lib/cache";
 import { fetchRepositoryCardData, parseRepository, renderProfileCard, renderRepositoryCard, resolveProfileCardOptions } from "@/lib/profile-card";
 
 export const dynamic = "force-dynamic";
@@ -42,6 +43,9 @@ export async function GET(request: NextRequest) {
       </div>,
       { width: options.width, height: options.height },
     );
+    for (const [name, value] of Object.entries(getCacheHeaders("default"))) {
+      response.headers.set(name, value);
+    }
     if (request.nextUrl.searchParams.get("download") === "true") {
       response.headers.set("Content-Disposition", `attachment; filename="${repository ? `${repository.owner}-${repository.repo}` : username}-github-card.png"`);
     }
