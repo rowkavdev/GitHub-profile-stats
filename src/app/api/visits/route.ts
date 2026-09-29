@@ -2,6 +2,8 @@ import { NextRequest } from "next/server";
 import { trackView, trackVisit } from "@/lib/tracking";
 import { renderBadge, resolveBadgeStyle } from "../../../lib/svg/badge";
 import { sanitizeUsername } from "@/lib/sanitize";
+import { renderErrorCard } from "@/lib/svg";
+import { resolveTheme } from "@/lib/themes/themes";
 import { getCacheHeaders } from "@/lib/cache";
 
 export const dynamic = "force-dynamic";
@@ -26,6 +28,13 @@ export async function GET(request: NextRequest) {
   const rawUsername = params.get("username") ?? "";
   const username = sanitizeUsername(rawUsername);
   const repo = sanitizeRepo(params.get("repo"));
+
+  if ((params.has("username") && !username) || (params.has("repo") && !repo)) {
+    return new Response(
+      renderErrorCard("Invalid username or repo parameter", resolveTheme("default", {})),
+      { status: 400, headers: NO_CACHE_HEADERS },
+    );
+  }
 
   let count: number;
   let label: string;
