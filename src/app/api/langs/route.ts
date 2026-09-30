@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { fetchLanguageStats, parseExtraOwners } from "@/lib/github";
 import { renderLanguageChart, renderErrorCard } from "@/lib/svg";
 import { resolveTheme } from "@/lib/themes/themes";
-import { sanitizeUsername, sanitizeHexParam } from "@/lib/sanitize";
+import { sanitizeUsername, sanitizeHexParam, parseFiniteFloat } from "@/lib/sanitize";
 import {
   LangChartOptions,
   LangChartLayout,
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     hide_title: params.get("hide_title") === "true",
     custom_title: params.get("custom_title") ?? undefined,
     border_radius: Math.min(
-      Math.max(parseFloat(params.get("border_radius") ?? "4.5") || 4.5, 0),
+      Math.max(parseFiniteFloat(params.get("border_radius"), 4.5), 0),
       50,
     ),
     max_langs: maxLangs,

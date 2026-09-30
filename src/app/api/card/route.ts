@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { fetchGitHubStats, parseExtraOwners } from "@/lib/github";
 import { renderCard, renderErrorCard } from "@/lib/svg";
 import { resolveTheme } from "@/lib/themes/themes";
-import { sanitizeUsername, sanitizeHexParam } from "@/lib/sanitize";
+import { sanitizeUsername, sanitizeHexParam, parseFiniteFloat } from "@/lib/sanitize";
 import { getCacheHeaders } from "@/lib/cache";
 import { trackUser } from "@/lib/tracking";
 
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     show_icons: params.get("show_icons") !== "false",
     show_ring: params.get("show_ring") !== "false",
     border_radius: Math.min(
-      Math.max(parseFloat(params.get("border_radius") ?? "4.5") || 4.5, 0),
+      Math.max(parseFiniteFloat(params.get("border_radius"), 4.5), 0),
       50,
     ),
     custom_title: params.get("custom_title") ?? undefined,
