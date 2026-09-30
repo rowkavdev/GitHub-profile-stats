@@ -1,3 +1,4 @@
+import GoogleAnalyticsConsent from "@/components/GoogleAnalyticsConsent";
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -126,6 +127,7 @@ export default function RootLayout({
       </head>
       <body className="bg-[#0d1117] text-[#c9d1d9] antialiased">
         {children}
+        <GoogleAnalyticsConsent />
         <Analytics />
         <SpeedInsights />
       </body>
