@@ -26,7 +26,7 @@ const route = load(join(process.cwd(), 'src/app/api/card/route.ts'), {
   '@/lib/github': { fetchGitHubStats: async (name) => { if(name === 'missing') throw new Error('not found'); return {username:name}; }, parseExtraOwners: () => [] },
   '@/lib/svg': { renderCard: () => '<svg/>', renderErrorCard: () => '<svg>error</svg>' },
   '@/lib/themes/themes': { resolveTheme: () => ({}) },
-  '@/lib/sanitize': { sanitizeUsername: (name) => /^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$/.test(name.trim()) ? name.trim() : null, sanitizeHexParam: () => undefined },
+  '@/lib/sanitize': { sanitizeUsername: (name) => /^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$/.test(name.trim()) ? name.trim() : null, sanitizeHexParam: () => undefined, parseFiniteFloat: (raw, fallback) => { const value = parseFloat(raw ?? ""); return Number.isFinite(value) ? value : fallback; } },
   '@/lib/cache': { getCacheHeaders: () => ({}) },
   '@/lib/tracking': { trackUser: async (name) => { recorded.push(name.toLowerCase()); } },
 });

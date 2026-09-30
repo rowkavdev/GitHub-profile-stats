@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { fetchGitHubStats } from "@/lib/github";
 import { renderErrorCard, renderSparkline } from "@/lib/svg";
 import { resolveTheme } from "@/lib/themes/themes";
-import { sanitizeUsername, sanitizeHexParam } from "@/lib/sanitize";
+import { sanitizeUsername, sanitizeHexParam, parseFiniteFloat } from "@/lib/sanitize";
 import { getCacheHeaders } from "@/lib/cache";
 
 export const dynamic = "force-dynamic";
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     240,
   );
   const borderRadius = clamp(
-    parseFloat(params.get("border_radius") ?? "6") || 6,
+    parseFiniteFloat(params.get("border_radius"), 6),
     0,
     50,
   );

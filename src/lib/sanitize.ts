@@ -50,3 +50,9 @@ export function sanitizeHexParam(
 export function formatNumber(num: number): string {
   return num.toLocaleString("en-US");
 }
+
+/** Parse a finite numeric option without treating zero as missing. */
+export function parseFiniteFloat(raw: string | null, fallback: number): number {
+  const value = parseFloat(raw ?? "");
+  return Number.isFinite(value) ? value : fallback;
+}
