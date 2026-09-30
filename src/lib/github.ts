@@ -120,19 +120,20 @@ function calculateWeeklyTrend(
 ): { thisWeek: number; lastWeek: number } {
   const now = new Date();
   const weekAgo = new Date(now);
-  weekAgo.setDate(weekAgo.getDate() - 7);
+  weekAgo.setUTCDate(weekAgo.getUTCDate() - 7);
   const twoWeeksAgo = new Date(now);
-  twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+  twoWeeksAgo.setUTCDate(twoWeeksAgo.getUTCDate() - 14);
 
+  const today = now.toISOString().split("T")[0];
   const weekAgoStr = weekAgo.toISOString().split("T")[0];
   const twoWeeksAgoStr = twoWeeksAgo.toISOString().split("T")[0];
 
   const thisWeek = days
-    .filter((d) => d.date >= weekAgoStr)
+    .filter((d) => d.date > weekAgoStr && d.date <= today)
     .reduce((sum, d) => sum + d.contributionCount, 0);
 
   const lastWeek = days
-    .filter((d) => d.date >= twoWeeksAgoStr && d.date < weekAgoStr)
+    .filter((d) => d.date > twoWeeksAgoStr && d.date <= weekAgoStr)
     .reduce((sum, d) => sum + d.contributionCount, 0);
 
   return { thisWeek, lastWeek };
@@ -158,10 +159,11 @@ function calculateActivityLevel(days: ContributionDay[]): number {
   // Activity level: % of days in past 7 that had at least 1 contribution
   const now = new Date();
   const weekAgo = new Date(now);
-  weekAgo.setDate(weekAgo.getDate() - 7);
+  weekAgo.setUTCDate(weekAgo.getUTCDate() - 7);
   const cutoff = weekAgo.toISOString().split("T")[0];
 
-  const recent = days.filter((d) => d.date >= cutoff);
+  const today = now.toISOString().split("T")[0];
+  const recent = days.filter((d) => d.date > cutoff && d.date <= today);
   if (recent.length === 0) return 0;
   const activeDays = recent.filter((d) => d.contributionCount > 0).length;
   return Math.round((activeDays / recent.length) * 100);
