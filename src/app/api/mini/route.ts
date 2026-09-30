@@ -65,7 +65,6 @@ export async function GET(request: NextRequest) {
 
   const color =
     sanitizeHexParam(params.get("color")) ??
-    theme.title.replace(/^#/, "") ??
     metric.color;
   const customLabel = params.get("label")?.trim();
   const label =
