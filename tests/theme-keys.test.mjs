@@ -19,7 +19,7 @@ function load(relative, stubs) {
 const themes = {default:{bg:'#000',text:'#fff',title:'#eee',icon:'#bbb',border:'#ccc'}, dark:{bg:'#111',text:'#eee',title:'#fff',icon:'#ddd',border:'#aaa'}};
 const {resolveTheme} = load('src/lib/themes/themes.ts', {'./configs/registry':{themes}});
 // Profile options are parsed from the same source via a transpiled module, with unrelated imports stubbed.
-const {resolveProfileCardOptions} = load('src/lib/profile-card.ts', {'@/lib/sanitize':{sanitizeHexParam:()=>undefined}, '@/lib/types':{}, '@/lib/github':{}});
+const {resolveProfileCardOptions} = load('src/lib/profile-card.ts', {'@/lib/sanitize':{sanitizeHexParam:()=>undefined}, '@/lib/types':{}, '@/lib/github':{}, '@/lib/social-card-layout':{PROFILE_CARD_STYLES:['github','compact','split','editorial','minimal']}});
 
 for (const name of ['__proto__', 'constructor', 'toString']) {
   test(`invalid inherited theme ${name} falls back on both card families`, () => {

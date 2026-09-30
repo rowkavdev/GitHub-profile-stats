@@ -1,4 +1,6 @@
-import { GitHubStats } from "@/lib/types";
+import { renderSocialLayout, PROFILE_CARD_STYLES, ProfileCardStyle } from "@/lib/social-card-layout";
+export { PROFILE_CARD_STYLES } from "@/lib/social-card-layout";
+import { GitHubStats, LanguageStat } from "@/lib/types";
 import { escapeXml, sanitizeHexParam } from "@/lib/sanitize";
 
 export type ProfileCardType = "repo" | "profile" | "compact" | "contributions";
@@ -14,6 +16,7 @@ export type ProfileCardTheme = {
 
 export type ProfileCardOptions = {
   type: ProfileCardType;
+  style: ProfileCardStyle;
   theme: ProfileCardTheme;
   title?: string;
   subtitle?: string;
@@ -84,66 +87,8 @@ export const PROFILE_THEMES: Record<string, ProfileCardTheme> = {
 
 const font = "'Segoe UI',Inter,Ubuntu,-apple-system,BlinkMacSystemFont,sans-serif";
 
-function stat(x: number, y: number, value: string | number, label: string, color: string, muted: string) {
-  return `<text x="${x}" y="${y}" font-family="${font}" font-size="30" font-weight="700" fill="${color}">${escapeXml(String(value))}</text><text x="${x}" y="${y + 28}" font-family="${font}" font-size="16" fill="${muted}">${escapeXml(label)}</text>`;
-}
-
-function languagePills(data: ProfileCardData, y: number, theme: ProfileCardOptions["theme"]) {
-  let x = 70;
-  return data.languages.slice(0, 4).map((lang) => {
-    const label = `${lang.name} ${lang.percentage}%`;
-    const width = Math.max(110, label.length * 9 + 38);
-    const out = `<rect x="${x}" y="${y}" width="${width}" height="36" rx="18" fill="${theme.panel}" stroke="${theme.border}"/><circle cx="${x + 19}" cy="${y + 18}" r="5" fill="${lang.color}"/><text x="${x + 32}" y="${y + 23}" font-family="${font}" font-size="14" fill="${theme.text}">${escapeXml(label)}</text>`;
-    x += width + 12;
-    return out;
-  }).join("");
-}
-
-function languageSection(data: ProfileCardData, y: number, theme: ProfileCardOptions["theme"], width: number) {
-  const languages = data.languages.slice(0, 4);
-  const panelX = 42;
-  const panelWidth = width - 84;
-  const gap = 14;
-  const tileWidth = (panelWidth - 56 - gap * 3) / 4;
-  const tiles = languages.map((lang, index) => {
-    const x = panelX + 28 + index * (tileWidth + gap);
-    const barWidth = Math.max(0, (tileWidth - 32) * Math.min(100, lang.percentage) / 100);
-    return `<rect x="${x}" y="${y + 52}" width="${tileWidth}" height="82" rx="14" fill="${theme.bg}" stroke="${theme.border}"/><circle cx="${x + 18}" cy="${y + 77}" r="6" fill="${lang.color}"/><text x="${x + 32}" y="${y + 83}" font-family="${font}" font-size="17" font-weight="600" fill="${theme.text}">${escapeXml(lang.name)}</text><text x="${x + tileWidth - 16}" y="${y + 83}" text-anchor="end" font-family="${font}" font-size="16" fill="${theme.muted}">${lang.percentage}%</text><rect x="${x + 16}" y="${y + 101}" width="${tileWidth - 32}" height="10" rx="5" fill="${theme.border}"/><rect x="${x + 16}" y="${y + 101}" width="${barWidth}" height="10" rx="5" fill="${lang.color}"/>`;
-  }).join("");
-  return `<rect x="${panelX}" y="${y}" width="${panelWidth}" height="154" rx="22" fill="${theme.panel}" stroke="${theme.border}"/><text x="${panelX + 28}" y="${y + 33}" font-family="${font}" font-size="19" font-weight="700" fill="${theme.text}">Top languages</text>${tiles}`;
-}
-
-function avatar(data: ProfileCardData, x: number, y: number, size: number, theme: ProfileCardOptions["theme"]) {
-  if (!data.avatarDataUri) return "";
-  const id = `avatar-${x}-${y}`;
-  return `<defs><clipPath id="${id}"><rect x="${x}" y="${y}" width="${size}" height="${size}" rx="${Math.round(size * 0.18)}"/></clipPath></defs><rect x="${x - 2}" y="${y - 2}" width="${size + 4}" height="${size + 4}" rx="${Math.round(size * 0.2)}" fill="${theme.border}"/><image href="${data.avatarDataUri}" x="${x}" y="${y}" width="${size}" height="${size}" preserveAspectRatio="xMidYMid slice" clip-path="url(#${id})"/>`;
-}
-
 function statPanel(x: number, y: number, width: number, value: string | number, label: string, theme: ProfileCardOptions["theme"]) {
   return `<rect x="${x}" y="${y}" width="${width}" height="112" rx="18" fill="${theme.panel}" stroke="${theme.border}"/><text x="${x + 22}" y="${y + 47}" font-family="${font}" font-size="30" font-weight="700" fill="${theme.text}">${escapeXml(String(value))}</text><text x="${x + 22}" y="${y + 78}" font-family="${font}" font-size="15" fill="${theme.muted}">${escapeXml(label)}</text>`;
-}
-
-function repoLayout(data: ProfileCardData, options: ProfileCardOptions) {
-  const { theme, width, height } = options;
-  const displayName = escapeXml(options.title || data.name || data.username);
-  const bio = options.subtitle ?? data.bio ?? "";
-  const bioLine = bio ? `<text x="70" y="180" font-family="${font}" font-size="20" fill="${theme.muted}">${escapeXml(bio.slice(0, 110))}</text>` : "";
-  const stats = [[data.followers, "Followers"], [data.publicRepos, "Public repos"], [data.totalStars, "Stars earned"], [data.contributionsThisYear, "Contributions"]] as const;
-  return `<rect width="${width}" height="${height}" fill="${theme.bg}"/><rect x="1" y="1" width="${width - 2}" height="${height - 2}" rx="28" fill="${theme.bg}" stroke="${theme.border}" stroke-width="2"/><rect x="42" y="42" width="${width - 84}" height="206" rx="24" fill="${theme.panel}" stroke="${theme.border}"/>${options.showAvatar ? avatar(data, width - 238, 59, 170, theme) : ""}<text x="70" y="112" font-family="${font}" font-size="40" font-weight="700" fill="${theme.text}">${displayName}</text><text x="70" y="150" font-family="${font}" font-size="22" fill="${theme.accent}">@${escapeXml(data.username)}</text>${bioLine}${stats.map((item, index) => statPanel(42 + index * 284, 276, 264, item[0], item[1], theme)).join("")}${options.showLanguages ? languageSection(data, 420, theme, width) : ""}<rect x="0" y="${height - 18}" width="${width}" height="18" fill="${theme.accent}"/>`;
-}
-
-function profileLayout(data: ProfileCardData, options: ProfileCardOptions) {
-  const { theme, width, height } = options;
-  const bio = options.subtitle ?? data.bio ?? "";
-  const bioLine = bio ? `<text x="305" y="218" font-family="${font}" font-size="19" fill="${theme.muted}">${escapeXml(bio.slice(0, 100))}</text>` : "";
-  const stats = [[data.contributionsThisYear, "Contributions this year"], [data.totalStars, "Stars earned"], [data.totalPRs, "Pull requests"], [data.followers, "Followers"]] as const;
-  return `<rect width="${width}" height="${height}" fill="${theme.bg}"/><rect x="38" y="38" width="${width - 76}" height="${height - 76}" rx="34" fill="${theme.panel}" stroke="${theme.border}" stroke-width="2"/>${options.showAvatar ? avatar(data, 76, 72, 180, theme) : ""}<text x="292" y="130" font-family="${font}" font-size="46" font-weight="700" fill="${theme.text}">${escapeXml(data.name || data.username)}</text><text x="292" y="176" font-family="${font}" font-size="24" fill="${theme.accent}">@${escapeXml(data.username)}</text>${bioLine}${stats.map((item, index) => statPanel(70 + index * 270, 292, 248, item[0], item[1], theme)).join("")}${options.showLanguages ? languagePills(data, 452, theme) : ""}`;
-}
-
-function compactLayout(data: ProfileCardData, options: ProfileCardOptions) {
-  const { theme, width, height } = options;
-  const stats = [[data.followers, "Followers"], [data.totalStars, "Stars"], [data.publicRepos, "Repos"], [data.contributionsThisYear, "Contributions"]] as const;
-  return `<rect width="${width}" height="${height}" fill="${theme.bg}"/><rect x="1" y="1" width="${width - 2}" height="${height - 2}" rx="24" fill="${theme.panel}" stroke="${theme.border}" stroke-width="2"/>${options.showAvatar ? avatar(data, 42, 38, 150, theme) : ""}<text x="222" y="86" font-family="${font}" font-size="36" font-weight="700" fill="${theme.text}">${escapeXml(data.name || data.username)}</text><text x="222" y="128" font-family="${font}" font-size="21" fill="${theme.accent}">@${escapeXml(data.username)}</text>${stats.map((item, index) => statPanel(42 + index * 238, 180, 218, item[0], item[1], theme)).join("")}`;
 }
 
 function contributionGraphLayout(data: ProfileCardData, options: ProfileCardOptions) {
@@ -167,7 +112,12 @@ function contributionGraphLayout(data: ProfileCardData, options: ProfileCardOpti
 }
 
 export function renderProfileCard(data: ProfileCardData, options: ProfileCardOptions): string {
-  const body = options.type === "profile" ? profileLayout(data, options) : options.type === "compact" ? compactLayout(data, options) : options.type === "contributions" ? contributionGraphLayout(data, options) : repoLayout(data, options);
+  const body = options.type === "contributions" ? contributionGraphLayout(data, options) : renderSocialLayout({
+    name: options.title || data.name || data.username, handle: data.username,
+    description: options.subtitle ?? data.bio ?? "", avatar: data.avatarDataUri,
+    metrics: [{value:data.followers,label:"Followers",icon:"people"},{value:data.publicRepos,label:"Public repos",icon:"repo"},{value:data.totalStars,label:"Stars earned",icon:"star"},{value:data.contributionsThisYear,label:"Contributions",icon:"graph"}],
+    languages: data.languages,
+  }, options);
   return `<svg width="${options.width}" height="${options.height}" viewBox="0 0 ${options.width} ${options.height}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(data.username)} GitHub profile card"><title>${escapeXml(data.username)} GitHub profile card</title>${body}</svg>`;
 }
 
@@ -177,16 +127,19 @@ export function resolveProfileCardOptions(params: URLSearchParams): ProfileCardO
   const themeName = params.get("theme") || "github";
   const preset = Object.hasOwn(PROFILE_THEMES, themeName) ? PROFILE_THEMES[themeName] : PROFILE_THEMES.github;
   const custom = (key: keyof ProfileCardTheme) => sanitizeHexParam(params.get(key)) || preset[key];
-  const compact = type === "compact";
+  const style = PROFILE_CARD_STYLES.includes(params.get("style") as ProfileCardStyle) ? params.get("style") as ProfileCardStyle : "github";
+  const compact = type === "compact" && style === "github";
+  const heights = { github: 500, compact: 430, split: 550, editorial: 550, minimal: 400 };
   return {
     type,
+    style,
     theme: { bg: custom("bg"), panel: custom("panel"), text: custom("text"), muted: custom("muted"), accent: custom("accent"), border: custom("border") },
     title: params.get("title")?.slice(0, 80) || undefined,
     subtitle: params.get("subtitle")?.slice(0, 140) || undefined,
     showAvatar: params.get("show_avatar") !== "false",
-    showLanguages: !compact && params.get("show_languages") !== "false",
+    showLanguages: params.get("show_languages") !== "false",
     width: compact ? 1000 : 1200,
-    height: compact ? 320 : 627,
+    height: type === "contributions" ? 627 : compact ? 430 : heights[style],
   };
 }
 
@@ -201,11 +154,34 @@ export type RepositoryCardData = {
   openIssues: number;
   stars: number;
   forks: number;
+  languages?: LanguageStat[];
 };
 
 export function parseRepository(value: string | null): { owner: string; repo: string } | null {
   const match = value?.trim().match(/^([A-Za-z0-9](?:[A-Za-z0-9-]{0,38}))\/([A-Za-z0-9._-]{1,100})$/);
   return match ? { owner: match[1], repo: match[2] } : null;
+}
+
+async function repositoryPageCount(url: string, headers: Record<string,string>): Promise<number> {
+  try {
+    const response = await fetch(url, {headers, cache: "no-store"});
+    if (!response.ok) return 0;
+    const last = (response.headers.get("link") || "").match(/[?&]page=(\d+)>; rel="last"/);
+    return last ? Number(last[1]) : (await response.json()).length;
+  } catch { return 0; }
+}
+
+async function repositoryLanguages(owner: string, repo: string, headers: Record<string,string>): Promise<LanguageStat[]> {
+  // One cached fetch, not a request per language; style changes reuse the response.
+  const languagesResponse = await fetch(`https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/languages`, { headers, next: { revalidate: 3600 } });
+  if (languagesResponse.ok) {
+    const bytes: Record<string, number> = await languagesResponse.json();
+    const entries = Object.entries(bytes).filter(([,size]) => Number.isFinite(size) && size > 0).sort((a,b) => b[1]-a[1]);
+    const total = entries.reduce((sum,[,size])=>sum+size,0);
+    const colors: Record<string,string> = { TypeScript:"#3178c6", JavaScript:"#f1e05a", CSS:"#663399", HTML:"#e34c26", Python:"#3572a5", Rust:"#dea584", Go:"#00add8", Shell:"#89e051", Java:"#b07219", Ruby:"#701516", C:"#555555", "C++":"#f34b7d", "C#":"#178600" };
+    return entries.map(([name,size])=>({name,size,percentage:size/total*100,color:colors[name]||"#8b949e"}));
+  }
+  return [];
 }
 
 export async function fetchRepositoryCardData(owner: string, repo: string): Promise<RepositoryCardData> {
@@ -224,30 +200,16 @@ export async function fetchRepositoryCardData(owner: string, repo: string): Prom
   if (issues.incomplete_results === true || !Number.isSafeInteger(issues.total_count) || issues.total_count < 0) {
     throw new Error("GitHub returned an incomplete issue count");
   }
-  let contributors = 0;
-  let commits = 0;
-  try {
-    const contributorsResponse = await fetch(`${json.contributors_url}?per_page=1&anon=true`, { headers, cache: "no-store" });
-    if (contributorsResponse.ok) {
-      const link = contributorsResponse.headers.get("link") || "";
-      const last = link.match(/[?&]page=(\d+)>; rel="last"/);
-      contributors = last ? Number(last[1]) : (await contributorsResponse.json()).length;
-    }
-  } catch {}
-  try {
-    const commitsResponse = await fetch(`${json.commits_url.replace("{/sha}", "")}?per_page=1`, { headers, cache: "no-store" });
-    if (commitsResponse.ok) {
-      const link = commitsResponse.headers.get("link") || "";
-      const last = link.match(/[?&]page=(\d+)>; rel="last"/);
-      commits = last ? Number(last[1]) : (await commitsResponse.json()).length;
-    }
-  } catch {}
-  return { owner: json.owner.login, name: json.name, description: json.description || "", ownerAvatarUrl: json.owner.avatar_url, avatarDataUri: "", contributors, commits, openIssues: issues.total_count, stars: json.stargazers_count, forks: json.forks_count };
+  const contributors = await repositoryPageCount(`${json.contributors_url}?per_page=1&anon=true`, headers);
+  const commits = await repositoryPageCount(`${json.commits_url.replace("{/sha}", "")}?per_page=1`, headers);
+  const languages = await repositoryLanguages(owner, repo, headers);
+  return { owner: json.owner.login, name: json.name, description: json.description || "", ownerAvatarUrl: json.owner.avatar_url, avatarDataUri: "", contributors, commits, openIssues: issues.total_count, stars: json.stargazers_count, forks: json.forks_count, languages };
 }
 
 export function renderRepositoryCard(data: RepositoryCardData, options: ProfileCardOptions): string {
-  const { theme, width, height } = options;
-  const avatarSvg = options.showAvatar && data.avatarDataUri ? avatar({ username: data.owner, avatarDataUri: data.avatarDataUri } as ProfileCardData, width - 250, 62, 172, theme) : "";
-  const body = `<rect width="${width}" height="${height}" fill="${theme.bg}"/><rect x="1" y="1" width="${width - 2}" height="${height - 2}" rx="28" fill="${theme.bg}" stroke="${theme.border}" stroke-width="2"/>${avatarSvg}<text x="70" y="125" font-family="${font}" font-size="38" font-weight="400" fill="${theme.text}">${escapeXml(data.owner)}/</text><text x="${70 + Math.min(data.owner.length * 22 + 22, 360)}" y="125" font-family="${font}" font-size="38" font-weight="700" fill="${theme.text}">${escapeXml(data.name)}</text>${(options.subtitle || data.description) ? `<text x="70" y="185" font-family="${font}" font-size="22" fill="${theme.muted}">${escapeXml((options.subtitle || data.description).slice(0, 95))}</text>` : ""}${[[data.commits, "Commits"], [data.contributors, "Contributors"], [data.openIssues, "Open issues"], [data.stars, "Stars"], [data.forks, "Forks"]].map((item, index) => statPanel(42 + index * 224, 286, 204, item[0], item[1] as string, theme)).join("")}<rect x="0" y="${height - 18}" width="${width}" height="18" fill="${theme.accent}"/>`;
+  const { width, height } = options;
+  const body = renderSocialLayout({ owner: data.owner, name: options.title || data.name, description: options.subtitle ?? data.description, avatar: data.avatarDataUri,
+    metrics: [{value:data.contributors,label:"Contributors",icon:"people"},{value:data.openIssues,label:"Open issues",icon:"issue"},{value:data.stars,label:"Stars",icon:"star"},{value:data.forks,label:"Forks",icon:"pr"}], languages: data.languages || [],
+  }, options);
   return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(data.owner)}/${escapeXml(data.name)} repository card"><title>${escapeXml(data.owner)}/${escapeXml(data.name)} repository card</title>${body}</svg>`;
 }

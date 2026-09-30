@@ -196,6 +196,14 @@ Default, Light, Radical, Tokyo Night, Dracula, Nord, Gruvbox, Catppuccin, Ocean,
 
 MIT
 
+## Social card styles
+
+Repository and profile cards default to a plain GitHub-style layout. Use `style=github`, `compact`, `split`, `editorial` or `minimal` for layout changes, independently of `theme=github`, `light`, `dark`, `ocean`, `violet` or `amber`.
+
+Both builders have separate style and theme controls. The selected style is preserved in the SVG, PNG download and markdown embed URLs. Cards show a segmented language bar at the bottom with language names and percentages, based on GitHub language data. Use `show_languages=false` to hide it or `show_avatar=false` to hide the avatar. Empty or unavailable language data is labelled, not replaced by a decorative colour strip. Repository cards show contributors, open issues, stars and forks, like GitHub's native preview.
+
+Existing `type=repo`, `profile` and `compact` URLs use the new layouts; `type=contributions` keeps its contribution graph. Styles are for the repository/profile layouts, not the graph. The compact layout is shorter; other styles have heights matched to their content.
+
 ## Live social card examples
 
 [![rowkav09 profile card](https://ghstats.dev/api/profile?username=rowkav09&type=profile&theme=dark)](https://github.com/rowkavdev/GitHub-profile-stats)
