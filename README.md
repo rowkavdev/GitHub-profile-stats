@@ -245,3 +245,7 @@ The preset and layout registries are separate, so adding a new colour preset or 
    <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=rowkavdev/github-profile-stats&type=timeline&legend=bottom-right" />
  </picture>
 </a>
+
+### Optional Google Analytics
+
+The hosted site uses GA4 measurement ID `G-ZGXCN93Z7E` only after a visitor accepts optional analytics. Decline and Accept have equal weight. No Google tag or request loads before consent; the Analytics choices control allows withdrawal, clears this site's GA cookies and reloads without the tag. Advertising consent and Google signals stay off. Enhanced measurement is off in the GA4 stream. Manual page views use route classes, not profile/repo names, query strings or referrers. The privacy page explains the choice and the separate existing Vercel measurement. GA4 starts with consenting visits after deployment; it has no retroactive history.
