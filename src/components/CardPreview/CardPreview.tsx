@@ -274,7 +274,7 @@ export default function CardPreview() {
                             : "text-[#8b949e] hover:text-[#c9d1d9]"
                         }`}
                       >
-                        {s === "default" ? "Standard" : "Hidden"}
+                        {s === "default" ? "Standard" : "Compact"}
                       </button>
                     ))}
                   </div>
