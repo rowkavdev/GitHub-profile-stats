@@ -1,17 +1,19 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { PROFILE_CARD_STYLES } from "@/lib/social-card-layout";
 
 const THEMES = ["github", "light", "dark", "ocean", "violet", "amber"] as const;
 const REPO_URL = "https://github.com/rowkavdev/GitHub-profile-stats";
 
 export default function RepositoryCardBuilder({ owner, repo }: { owner: string; repo: string }) {
-  const [theme, setTheme] = useState<(typeof THEMES)[number]>("dark");
+  const [theme, setTheme] = useState<(typeof THEMES)[number]>("github");
+  const [style, setStyle] = useState<(typeof PROFILE_CARD_STYLES)[number]>("github");
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
   const repository = `${owner}/${repo}`;
   const encoded = encodeURIComponent(repository);
-  const svgUrl = `/api/profile?repo=${encoded}&theme=${theme}`;
-  const pngUrl = `/api/profile/png?repo=${encoded}&theme=${theme}&download=true`;
+  const svgUrl = `/api/profile?repo=${encoded}&theme=${theme}&style=${style}`;
+  const pngUrl = `/api/profile/png?repo=${encoded}&theme=${theme}&style=${style}&download=true`;
   const markdown = useMemo(() => `[![${repository} repository card](https://ghstats.dev${svgUrl})](${REPO_URL})`, [repository, svgUrl]);
 
   function copyMarkdown() {
@@ -28,9 +30,16 @@ export default function RepositoryCardBuilder({ owner, repo }: { owner: string; 
     <section className="rounded-2xl border border-[#30363d] bg-[#010409] p-4 shadow-2xl shadow-black/20 sm:p-8">
       <div className="mb-8">
         <h2 className="text-2xl font-bold">Build a repository card</h2>
-        <p className="mt-1 text-sm text-[#8b949e]">Pick a theme, preview it live, then copy the linked embed or download a PNG.</p>
+        <p className="mt-1 text-sm text-[#8b949e]">Pick a style and theme, preview it live, then copy the linked embed or download a PNG.</p>
       </div>
       <div className="grid gap-8 lg:grid-cols-[320px_minmax(0,1fr)]">
+        <div>
+          <fieldset className="mb-7">
+            <legend className="label-text">Layout style</legend>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {PROFILE_CARD_STYLES.map((option) => <button key={option} type="button" aria-pressed={style === option} onClick={() => setStyle(option)} className={`rounded-lg border px-3 py-2 text-sm font-semibold capitalize ${style === option ? "border-[#58a6ff] bg-[#1f6feb]/15 text-[#79c0ff]" : "border-[#30363d] bg-[#161b22] text-[#8b949e]"}`}>{option === "github" ? "GitHub" : option}</button>)}
+            </div>
+          </fieldset>
         <fieldset>
           <legend className="label-text">Theme preset</legend>
           <div className="mt-2 grid grid-cols-2 gap-2">
@@ -41,10 +50,11 @@ export default function RepositoryCardBuilder({ owner, repo }: { owner: string; 
             ))}
           </div>
         </fieldset>
+        </div>
         <div className="min-w-0 space-y-5">
           <div className="preview-box min-h-0 overflow-hidden p-3 sm:p-5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img key={svgUrl} src={svgUrl} alt={`${repository} repository card in ${theme}`} className="h-auto w-full rounded-lg" />
+            <img key={svgUrl} src={svgUrl} alt={`${repository} repository ${style} card in ${theme}`} className="h-auto w-full rounded-lg" />
           </div>
           <div className="embed-block">
             <div className="flex items-center justify-between gap-3"><span className="label-text mb-0">Linked markdown embed</span><button type="button" onClick={copyMarkdown} className="copy-btn">{copyStatus === "copied" ? "Copied" : copyStatus === "failed" ? "Copy failed" : "Copy"}</button></div>

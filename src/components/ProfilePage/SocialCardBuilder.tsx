@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { PROFILE_CARD_STYLES } from "@/lib/social-card-layout";
 
 const TYPES = [
   { key: "profile", label: "Profile" },
@@ -13,11 +14,12 @@ const REPO_URL = "https://github.com/rowkavdev/GitHub-profile-stats";
 
 export default function SocialCardBuilder({ username }: { username: string }) {
   const [type, setType] = useState<(typeof TYPES)[number]["key"]>("profile");
-  const [theme, setTheme] = useState<(typeof THEMES)[number]>("dark");
+  const [theme, setTheme] = useState<(typeof THEMES)[number]>("github");
+  const [style, setStyle] = useState<(typeof PROFILE_CARD_STYLES)[number]>("github");
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
   const encoded = encodeURIComponent(username);
-  const svgUrl = `/api/profile?username=${encoded}&type=${type}&theme=${theme}`;
-  const pngUrl = `/api/profile/png?username=${encoded}&type=${type}&theme=${theme}&download=true`;
+  const svgUrl = `/api/profile?username=${encoded}&type=${type}&theme=${theme}&style=${style}`;
+  const pngUrl = `/api/profile/png?username=${encoded}&type=${type}&theme=${theme}&style=${style}&download=true`;
   const markdown = useMemo(
     () => `[![${username}'s GitHub ${type} card](https://ghstats.dev${svgUrl})](${REPO_URL})`,
     [svgUrl, type, username],
@@ -37,11 +39,19 @@ export default function SocialCardBuilder({ username }: { username: string }) {
     <section className="rounded-2xl border border-[#30363d] bg-[#010409] p-4 shadow-2xl shadow-black/20 sm:p-8">
       <div className="mb-8">
         <h2 className="text-2xl font-bold">Build a social card</h2>
-        <p className="mt-1 text-sm text-[#8b949e]">Pick a layout and theme, preview it live, then copy the linked embed or download a PNG.</p>
+        <p className="mt-1 text-sm text-[#8b949e]">Pick a card type, style and theme, preview it live, then copy the linked embed or download a PNG.</p>
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[320px_minmax(0,1fr)]">
         <div className="space-y-7">
+          <fieldset className="mb-7" disabled={type === "contributions"}>
+            <legend className="label-text">Layout style</legend>
+            {type === "contributions" && <p className="text-xs text-[#8b949e]">The contribution graph keeps its own layout.</p>}
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {PROFILE_CARD_STYLES.map((option) => <button key={option} type="button" aria-pressed={style === option} onClick={() => setStyle(option)} className={`rounded-lg border px-3 py-2 text-sm font-semibold capitalize ${style === option ? "border-[#58a6ff] bg-[#1f6feb]/15 text-[#79c0ff]" : "border-[#30363d] bg-[#161b22] text-[#8b949e]"}`}>{option === "github" ? "GitHub" : option}</button>)}
+            </div>
+          </fieldset>
+
           <fieldset>
             <legend className="label-text">Card type</legend>
             <div className="mt-2 grid grid-cols-2 gap-2">
@@ -69,7 +79,7 @@ export default function SocialCardBuilder({ username }: { username: string }) {
         <div className="min-w-0 space-y-5">
           <div className="preview-box min-h-0 overflow-hidden p-3 sm:p-5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img key={svgUrl} src={svgUrl} alt={`${username}'s ${type} card in ${theme}`} className="h-auto w-full rounded-lg" />
+            <img key={svgUrl} src={svgUrl} alt={`${username}'s ${type} ${style} card in ${theme}`} className="h-auto w-full rounded-lg" />
           </div>
           <div className="embed-block">
             <div className="flex items-center justify-between gap-3">
