@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
   const username = sanitizeUsername(rawUsername);
   const repo = sanitizeRepo(params.get("repo"));
 
-  if ((params.has("username") && !username) || (params.has("repo") && !repo)) {
+  if ((params.has("username") && !username) || (params.has("repo") && (!repo || !username))) {
     return new Response(
       renderErrorCard("Invalid username or repo parameter", resolveTheme("default", {})),
       { status: 400, headers: NO_CACHE_HEADERS },
