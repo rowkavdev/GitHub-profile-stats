@@ -42,31 +42,31 @@ export async function getVisitCount(): Promise<number> {
   return (await redis.get<number>(VISITS_KEY)) ?? 0;
 }
 
-/**
- * Increment and return the view count for a username (profile) or
- * username/repo combination (specific repo README).
- *
- * Keys:
- *   views:<username>            — profile-level counter
- *   views:<username>/<repo>     — per-repo counter
- */
+// Active counters keep their accumulated count. Anonymous counters that have
+// not been used for 90 days expire, so invented names do not persist forever.
+const VIEW_RETENTION_SECONDS = 90 * 24 * 60 * 60;
+const TRACK_VIEW_SCRIPT = `
+local count = redis.call('INCR', KEYS[1])
+redis.call('EXPIRE', KEYS[1], ARGV[1])
+return count
+`;
+
+function viewKey(username: string, repo?: string): string {
+  return repo ? `views:${username.toLowerCase()}/${repo.toLowerCase()}` : `views:${username.toLowerCase()}`;
+}
+
+/** Atomically increment and refresh retention, preserving legacy counts. */
 export async function trackView(username: string, repo?: string): Promise<number> {
   const redis = getRedis();
   if (!redis) return 0;
-  const key = repo
-    ? `views:${username.toLowerCase()}/${repo.toLowerCase()}`
-    : `views:${username.toLowerCase()}`;
-  return await redis.incr(key);
+  return await redis.eval<[number], number>(TRACK_VIEW_SCRIPT, [viewKey(username, repo)], [VIEW_RETENTION_SECONDS]);
 }
 
-/** Return the view count without incrementing. */
+/** Reads do not create counters or extend their lifetime. */
 export async function getViewCount(username: string, repo?: string): Promise<number> {
   const redis = getRedis();
   if (!redis) return 0;
-  const key = repo
-    ? `views:${username.toLowerCase()}/${repo.toLowerCase()}`
-    : `views:${username.toLowerCase()}`;
-  return (await redis.get<number>(key)) ?? 0;
+  return (await redis.get<number>(viewKey(username, repo))) ?? 0;
 }
 
 // Legacy aliases kept for backward compatibility

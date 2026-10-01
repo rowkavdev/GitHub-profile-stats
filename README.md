@@ -257,3 +257,13 @@ The preset and layout registries are separate, so adding a new colour preset or 
 ### Optional Google Analytics
 
 The hosted site uses GA4 measurement ID `G-ZGXCN93Z7E` only after a visitor accepts optional analytics. Decline and Accept have equal weight. No Google tag or request loads before consent; the Analytics choices control allows withdrawal, clears this site's GA cookies and reloads without the tag. Advertising consent and Google signals stay off. Enhanced measurement is off in the GA4 stream. Manual page views use route classes, not profile/repo names, query strings or referrers. The privacy page explains the choice and the separate existing Vercel measurement. GA4 starts with consenting visits after deployment; it has no retroactive history.
+
+### View-counter retention
+
+Profile and repository view counters expire after 90 days without an increment.
+Every view atomically refreshes the retention window and preserves the accumulated
+count, including counts on pre-existing keys. Reads do not extend retention.
+Inactive counters reset after expiration; active cards keep their totals. No
+existing keys are deleted during deployment. Untouched legacy keys have no TTL
+until their next view. Retention bounds lifetime, not the number of requests an
+attacker can make inside the 90-day window.
