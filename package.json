@@ -6,8 +6,9 @@
     "dev": "next dev",
     "build": "next build && node -e \"const f=require('fs');f.writeFileSync('.next/export-detail.json','{}');f.mkdirSync('.next/export',{recursive:true});for(const n of ['404','500'])f.writeFileSync('.next/export/'+n+'.html','')\"",
     "start": "next start",
-    "lint": "tsc --noEmit",
-    "test": "node --test tests/*.test.mjs"
+    "lint": "eslint src tests --max-warnings 0",
+    "test": "node --test tests/*.test.mjs",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@upstash/redis": "^1.38.4",
@@ -22,6 +23,8 @@
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "autoprefixer": "^10.6.1",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.3.8",
     "postcss": "^8.5.28",
     "tailwindcss": "^3.4.0",
     "typescript": "^5.0.0"
