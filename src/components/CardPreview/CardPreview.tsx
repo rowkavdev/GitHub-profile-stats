@@ -53,12 +53,6 @@ export default function CardPreview() {
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const origin = usePreviewOrigin();
 
-  useEffect(() => {
-    if (embedType !== "card" && advancedMode) {
-      setAdvancedMode(false);
-    }
-  }, [embedType, advancedMode]);
-
   const toggleStat = useCallback((key: string) => {
     setHiddenStats((prev) =>
       prev.includes(key) ? prev.filter((s) => s !== key) : [...prev, key],
@@ -193,7 +187,10 @@ export default function CardPreview() {
                 ).map((opt) => (
                   <button
                     key={opt.key}
-                    onClick={() => setEmbedType(opt.key)}
+                    onClick={() => {
+                      setEmbedType(opt.key);
+                      if (opt.key !== "card") setAdvancedMode(false);
+                    }}
                     className={`px-4 py-1.5 rounded-[9px] text-xs font-semibold tracking-wide transition-all duration-200 ease-out m-[2px] ${
                       embedType === opt.key
                         ? "bg-[#21262d] text-white shadow-sm border border-[#30363d]"
