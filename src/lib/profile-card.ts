@@ -163,12 +163,17 @@ export function parseRepository(value: string | null): { owner: string; repo: st
 }
 
 async function repositoryPageCount(url: string, headers: Record<string,string>): Promise<number> {
-  try {
-    const response = await fetch(url, {headers, cache: "no-store"});
-    if (!response.ok) return 0;
-    const last = (response.headers.get("link") || "").match(/[?&]page=(\d+)>; rel="last"/);
-    return last ? Number(last[1]) : (await response.json()).length;
-  } catch { return 0; }
+  const response = await fetch(url, {headers, cache: "no-store"});
+  if (!response.ok) throw new Error(`GitHub repository count request failed: ${response.status}`);
+  const last = (response.headers.get("link") || "").match(/[?&]page=(\d+)>; rel="last"/);
+  if (last) {
+    const count = Number(last[1]);
+    if (!Number.isSafeInteger(count) || count < 0) throw new Error("GitHub returned an invalid repository count");
+    return count;
+  }
+  const entries: unknown = await response.json();
+  if (!Array.isArray(entries)) throw new Error("GitHub returned an invalid repository count response");
+  return entries.length;
 }
 
 async function repositoryLanguages(owner: string, repo: string, headers: Record<string,string>): Promise<LanguageStat[]> {
