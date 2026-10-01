@@ -29,6 +29,9 @@ jobs:
       - name: Run regression tests
         run: bun run test
 
+      - name: Lint source and tests
+        run: bun run lint
+
       - name: Type check
         run: bun x tsc --noEmit
 
