@@ -14,6 +14,7 @@ function tab(storage) {
   const window = { addEventListener: (type, fn) => listeners.set(type, fn), removeEventListener: (type, fn) => { if (listeners.get(type) === fn) listeners.delete(type); } };
   const localStorage = { getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value) };
   const context = { exports: {}, require: id => id === 'react' ? {
+    useCallback: fn => fn,
     useState: initial => { const i = cursor++; if (!(i in states)) states[i] = initial; return [states[i], value => { states[i] = value; }]; },
     useEffect: (fn, next) => { const i = cursor++; if (!deps[i] || next.some((v, j) => v !== deps[i][j])) effects.push(() => { cleanups[i]?.(); cleanups[i] = fn(); }); deps[i] = next; },
   } : id === 'next/navigation' ? { usePathname: () => path } : { jsx: (type, props) => ({ type, props }), jsxs: (type, props) => ({ type, props }), Fragment: 'fragment' },
