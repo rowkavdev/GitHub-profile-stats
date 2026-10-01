@@ -203,6 +203,7 @@ export async function fetchRepositoryCardData(owner: string, repo: string): Prom
   const response = await fetch(`https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`, { headers, cache: "no-store" });
   if (!response.ok) throw new Error(response.status === 404 ? `Repository "${owner}/${repo}" not found` : `GitHub API responded with status ${response.status}`);
   const json = await response.json();
+  if (json.private === true) throw new Error(`Repository "${owner}/${repo}" not found`);
   // Repository REST open_issues_count includes PRs. Search's is:issue count
   // preserves the label's meaning without paging every open issue/PR.
   const issueQuery = new URLSearchParams({ q: `repo:${owner}/${repo} is:issue is:open`, per_page: "1" });
