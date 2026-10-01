@@ -19,23 +19,24 @@ export function truncateToWidth(
   maxWidth: number,
   fontSize: number,
 ): string {
+  const characters = Array.from(text);
   let width = 0;
   let lastFit = 0;
-  for (let i = 0; i < text.length; i++) {
-    const w = charWidth(text[i], fontSize);
+  for (let i = 0; i < characters.length; i++) {
+    const w = charWidth(characters[i], fontSize);
     if (width + w > maxWidth) break;
     width += w;
     lastFit = i + 1;
   }
-  if (lastFit === text.length) return text;
+  if (lastFit === characters.length) return text;
   if (lastFit === 0) return "\u2026";
   const ellipsisW = charWidth("\u2026", fontSize);
   while (lastFit > 0 && width + ellipsisW > maxWidth) {
-    width -= charWidth(text[lastFit - 1], fontSize);
+    width -= charWidth(characters[lastFit - 1], fontSize);
     lastFit--;
   }
   if (lastFit === 0) return "\u2026";
-  return text.slice(0, lastFit) + "\u2026";
+  return characters.slice(0, lastFit).join("") + "\u2026";
 }
 
 /** Formats a language's share of the total as a percentage string, with a
