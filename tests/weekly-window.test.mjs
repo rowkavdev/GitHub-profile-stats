@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { fetchGitHubStats } from '../src/lib/github.ts';
 const RealDate = Date;
 const today = '2026-03-30';
-async function stats(days) {
+async function stats() {
   return fetchGitHubStats('octocat');
 }
 test('equal seven-day UTC windows yield zero trend and ignore future dates', async () => {
