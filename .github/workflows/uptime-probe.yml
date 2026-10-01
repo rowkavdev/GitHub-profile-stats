@@ -12,5 +12,11 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - name: Record service availability
-        run: curl --fail --silent --show-error --retry 2 https://ghstats.dev/api/status > /dev/null
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check service availability
+        run: |
+          curl --fail --silent --show-error --retry 2 https://ghstats.dev/api/status -o /tmp/status.json
+          node scripts/check-uptime.mjs < /tmp/status.json
