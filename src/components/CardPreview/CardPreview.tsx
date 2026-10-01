@@ -22,6 +22,7 @@ import {
 import { STAT_OPTIONS, EMBED_LABELS, MINI_METRICS } from "./configs";
 import { EmbedType } from "./types";
 import { usePatchState } from "./utils/state";
+import { deriveEmbedOutput } from "./utils/output";
 import BadgeStylePicker from "./BadgeStylePicker";
 
 export default function CardPreview() {
@@ -42,14 +43,7 @@ export default function CardPreview() {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
-  const [output, setOutput] = useState({
-    embedUrl: "",
-    imgUrl: "",
-    embedLabel: EMBED_LABELS.card as string,
-    markdownCode: "",
-    htmlCode: "",
-    loading: false,
-  });
+  const [image, setImage] = useState({ imgUrl: "", loading: false });
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const origin = usePreviewOrigin();
 
@@ -112,41 +106,19 @@ export default function CardPreview() {
     username,
   ]);
 
+  const url = buildEmbedUrl();
+  const { embedUrl, embedLabel, markdownCode, htmlCode } = deriveEmbedOutput(url, EMBED_LABELS[embedType]);
+  const imgUrl = url ? image.imgUrl : "";
+  const loading = Boolean(url) && image.loading;
+
   useEffect(() => {
-    const url = buildEmbedUrl();
-    const label = EMBED_LABELS[embedType];
-
-    if (!url) {
-      setOutput({
-        embedUrl: "",
-        imgUrl: "",
-        embedLabel: label,
-        markdownCode: "",
-        htmlCode: "",
-        loading: false,
-      });
-      return;
-    }
-
-    setOutput((prev) => ({
-      ...prev,
-      embedUrl: url,
-      embedLabel: label,
-      markdownCode: `![${label}](${url})`,
-      htmlCode: `<img src="${url}" alt="${label}" />`,
-    }));
-
+    if (!url) return;
     const timeout = setTimeout(() => {
       const sep = url.includes("?") ? "&" : "?";
-      setOutput((prev) => ({
-        ...prev,
-        loading: true,
-        imgUrl: `${url}${sep}cache=${Date.now()}`,
-      }));
+      setImage({ loading: true, imgUrl: `${url}${sep}cache=${Date.now()}` });
     }, 500);
-
     return () => clearTimeout(timeout);
-  }, [buildEmbedUrl, embedType]);
+  }, [url]);
 
   const copyToClipboard = useCallback((text: string, field: string) => {
     if (!text) return;
@@ -158,8 +130,6 @@ export default function CardPreview() {
 
   const themeEntries = useMemo(() => Object.entries(themes), []);
 
-  const { embedUrl, imgUrl, embedLabel, markdownCode, htmlCode, loading } =
-    output;
 
   return (
     <section id="try" className="border-b border-[#21262d] bg-[#0d1117]">
@@ -659,10 +629,10 @@ export default function CardPreview() {
                     className="max-w-full transition-opacity duration-500 ease-out"
                     style={{ opacity: loading ? 0.4 : 1 }}
                     onLoad={() =>
-                      setOutput((prev) => ({ ...prev, loading: false }))
+                      setImage((prev) => ({ ...prev, loading: false }))
                     }
                     onError={() =>
-                      setOutput((prev) => ({ ...prev, loading: false }))
+                      setImage((prev) => ({ ...prev, loading: false }))
                     }
                   />
                 </div>
