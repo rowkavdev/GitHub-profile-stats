@@ -9,7 +9,7 @@ export function loadRoute(relative, mocks = {}) {
   const cache = new Map();
   function load(file) {
     if (cache.has(file)) return cache.get(file).exports;
-    const module = { exports: {} }; cache.set(file, module);
+    const loadedModule = { exports: {} }; cache.set(file, loadedModule);
     const output = ts.transpileModule(readFileSync(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
     const localRequire = (id) => {
       if (Object.hasOwn(mocks, id)) return mocks[id];
@@ -21,8 +21,8 @@ export function loadRoute(relative, mocks = {}) {
       }
       return load(resolved);
     };
-    vm.runInThisContext(`(function(require,module,exports){${output}\n})`, { filename: file })(localRequire, module, module.exports);
-    return module.exports;
+    vm.runInThisContext(`(function(require,module,exports){${output}\n})`, { filename: file })(localRequire, loadedModule, loadedModule.exports);
+    return loadedModule.exports;
   }
   return load(path.join(root, relative));
 }
