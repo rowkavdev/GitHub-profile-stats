@@ -43,6 +43,7 @@ query($username: String!) {
     repositories(
       first: 100
       ownerAffiliations: OWNER
+      privacy: PUBLIC
       orderBy: { field: STARGAZERS, direction: DESC }
       isFork: false
     ) {
@@ -444,6 +445,7 @@ query($username: String!) {
     repositories(
       first: 50
       ownerAffiliations: OWNER
+      privacy: PUBLIC
       isFork: false
       orderBy: { field: UPDATED_AT, direction: DESC }
     ) {
