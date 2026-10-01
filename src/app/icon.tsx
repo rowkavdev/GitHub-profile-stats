@@ -16,8 +16,8 @@ export default function Icon() {
           display: "flex",
         }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
+          alt=""
           src={SITE.avatarUrl}
           width={32}
           height={32}
