@@ -60,7 +60,7 @@ export function renderSparkline(
   const lastPoint = points[points.length - 1];
   const areaPath = `M ${firstX} ${HEIGHT - PAD_BOTTOM} ${linePath.replace(/^M/, "L")} L ${lastPoint.x} ${HEIGHT - PAD_BOTTOM} Z`;
 
-  const title = options.custom_title ?? `Last ${recent.length} days`; // fallback title
+  const title = options.custom_title ?? `Last ${recent.length} ${recent.length === 1 ? "day" : "days"}`; // fallback title
   const latestVal = values[values.length - 1];
   const latestLabel = `Today: ${latestVal}`;
   // The width helper is approximate; leave slack for bold system fonts.
