@@ -3,6 +3,7 @@ import { ThemeConfig } from "@/lib/themes/types";
 import { escapeXml } from "../sanitize";
 import { ICONS, EMOJIS } from "./icons";
 import { getVisibleStats } from "./stats-fields";
+import { estimateTextWidth } from "./text-metrics";
 import { renderActivityRing } from "./svg-primitives";
 
 function renderCompactCard(
@@ -126,7 +127,6 @@ export function renderCard(
   const ICON_SIZE = 16;
   const TEXT_ICON_PAD = 25;
   const TEXT_Y_OFF = 12.5;
-  const CHAR_W = 7.5;
   const TITLE_FS = 18;
   const LABEL_FS = 14;
   const TREND_FS = 10;
@@ -179,9 +179,12 @@ export function renderCard(
             : stat.trend.direction === "down"
               ? "M 0 4 L 4 10 L 8 4 L 5 4 L 5 0 L 3 0 L 3 4 Z"
               : "M 0 4 L 8 4 L 8 6 L 0 6 Z";
-        const labelWidth =
-          stat.value.length * CHAR_W + (showIcons ? TEXT_ICON_PAD : 0);
-        const arrowX = textX + labelWidth + 60;
+        // The value is right-aligned, so the badge is placed from the value's
+        // left edge, not from the label side, or a wide value runs into it.
+        const badgeWidth = 12 + stat.trend.text.length * 6.5;
+        const valueLeft = statAreaWidth - stat.value.length * 8;
+        const labelEnd = textX + estimateTextWidth(`${stat.label}:`, LABEL_FS);
+        const arrowX = Math.max(labelEnd + 8, valueLeft - 10 - badgeWidth);
         trendSvg = `<g transform="translate(${arrowX}, ${y + 2})">
           <path d="${arrowPath}" fill="${arrowColor}"/>
           <text x="12" y="9" fill="${arrowColor}" class="trend-text">${escapeXml(stat.trend.text)}</text>
