@@ -26,7 +26,13 @@ export default function renderStackedLanguageChart(
   let used = 0;
   const segments = languages.map((lang, idx) => {
     const pct = totalSize > 0 ? (lang.size / totalSize) * 100 : 0;
-    let w = Math.max(3, Math.round((pct / 100) * BAR_W));
+    // Reserve the minimum width for remaining languages before assigning
+    // a dominant segment; otherwise tiny segments can run beyond the card.
+    const reserved = (languages.length - idx - 1) * 3;
+    let w = Math.min(
+      Math.max(3, Math.round((pct / 100) * BAR_W)),
+      Math.max(0, BAR_W - used - reserved),
+    );
     if (idx === languages.length - 1) {
       w = Math.max(0, BAR_W - used);
     }
