@@ -6,6 +6,8 @@ export function escapeXml(str: string): string {
   return str
     // XML 1.0 permits tab, LF and CR, but not other C0 controls,
     // unmatched surrogate code units, or U+FFFE/U+FFFF.
+    // XML 1.0 forbids these controls; matching them is intentional.
+    // eslint-disable-next-line no-control-regex
     .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\ufffe\uffff]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/g, "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -18,7 +20,7 @@ export function escapeXml(str: string): string {
  * Validate a hex color string (without #). Accepts 3, 4, 6, or 8 hex chars.
  */
 export function isValidHex(hex: string): boolean {
-  return /^[0-9a-fA-F]{3}([0-9a-fA-F]{3})?([0-9a-fA-F]{2})?$/.test(hex);
+  return /^(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(hex);
 }
 
 /**
