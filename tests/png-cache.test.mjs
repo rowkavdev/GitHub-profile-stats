@@ -11,10 +11,10 @@ const requireFromRoute = createRequire(routePath);
 function loadRoute() {
   const source = readFileSync(routePath, 'utf8');
   const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2022 } }).outputText;
-  const module = new Module(routePath);
-  module.filename = routePath;
-  module.paths = Module._nodeModulePaths(join(process.cwd(), 'src/app/api/profile/png'));
-  module.require = (id) => {
+  const loadedModule = new Module(routePath);
+  loadedModule.filename = routePath;
+  loadedModule.paths = Module._nodeModulePaths(join(process.cwd(), 'src/app/api/profile/png'));
+  loadedModule.require = (id) => {
     if (id === 'next/og') return { ImageResponse: class extends Response { constructor() { super('png', { headers: { 'Content-Type': 'image/png' } }); } } };
     if (id === '@/lib/profile-card') return {
       parseRepository: (value) => value === 'octocat/Hello-World' ? { owner: 'octocat', repo: 'Hello-World' } : null,
@@ -27,8 +27,8 @@ function loadRoute() {
     if (id === '@/lib/cache') return requireFromRoute(join(process.cwd(), 'src/lib/cache.ts'));
     return requireFromRoute(id);
   };
-  module._compile(compiled, routePath);
-  return module.exports;
+  loadedModule._compile(compiled, routePath);
+  return loadedModule.exports;
 }
 
 test('successful PNG card sets edge cache headers, matching the SVG default profile', async () => {

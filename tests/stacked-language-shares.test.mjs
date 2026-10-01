@@ -6,6 +6,6 @@ test('stacked bars compute widths without carrying an unused share value into re
   const source = readFileSync('src/lib/svg/languages/renderers/stacked.ts', 'utf8');
   assert.doesNotMatch(source, /segments\.map\(\(\{ lang, pct, w \}/);
   assert.match(source, /Math\.round\(\(pct \/ 100\) \* BAR_W\)/);
-  const module = loadRoute('lib/svg/languages/renderers/stacked.ts');
-  assert.ok(Object.values(module).some(value => typeof value === 'function'));
+  const renderer = loadRoute('lib/svg/languages/renderers/stacked.ts');
+  assert.ok(Object.values(renderer).some(value => typeof value === 'function'));
 });
