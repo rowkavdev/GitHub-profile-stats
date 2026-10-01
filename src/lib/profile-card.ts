@@ -99,9 +99,16 @@ function contributionGraphLayout(data: ProfileCardData, options: ProfileCardOpti
   const gap = 4;
   const startX = 74;
   const startY = 178;
-  const cells = days.map((day, index) => {
-    const week = Math.floor(index / 7);
-    const weekday = index % 7;
+  // Place each day by its real UTC weekday. The calendar range can start
+  // mid-week and may skip dates, so list position says nothing about the row.
+  const dayMs = 86_400_000;
+  const dayStart = (date: string) => Date.parse(`${date}T00:00:00Z`);
+  const firstDay = days.length > 0 ? dayStart(days[0].date) : 0;
+  const gridStart = firstDay - new Date(firstDay).getUTCDay() * dayMs;
+  const cells = days.map((day) => {
+    const offset = Math.round((dayStart(day.date) - gridStart) / dayMs);
+    const week = Math.floor(offset / 7);
+    const weekday = offset % 7;
     const ratio = day.contributionCount / max;
     const opacity = day.contributionCount === 0 ? 1 : Math.max(0.28, Math.min(1, 0.22 + ratio * 0.78));
     const fill = day.contributionCount === 0 ? theme.panel : theme.accent;
