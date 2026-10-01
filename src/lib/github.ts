@@ -146,8 +146,11 @@ function calculateMostActiveDay(days: ContributionDay[]): string {
     const dow = new Date(d.date + "T00:00:00").getDay();
     totals[dow] += d.contributionCount;
   }
-  const maxIdx = totals.indexOf(Math.max(...totals));
-  return DAY_NAMES[maxIdx];
+  const best = Math.max(...totals);
+  // With no contributions every day ties at 0, and indexOf would report
+  // Sunday as the most active day.
+  if (best === 0) return "None";
+  return DAY_NAMES[totals.indexOf(best)];
 }
 
 function calculateAvgCommitsPerDay(days: ContributionDay[]): number {
