@@ -39,7 +39,11 @@ export default function GoogleAnalyticsConsent() {
   if(choice!=='granted'||(window as typeof window & {[key:string]:unknown})[`ga-disable-${ID}`]===true)return;
   const w=window as typeof window & {dataLayer?:unknown[];gtag?:(...args:unknown[])=>void};
   const route=safePath(path||'/');
-  if(!w.gtag){w.dataLayer=w.dataLayer||[];w.gtag=(...args:unknown[])=>{w.dataLayer!.push(args)};
+  if(!w.gtag){w.dataLayer=w.dataLayer||[];w.gtag=function(){
+   // Google's gtag command queue requires Arguments objects, not arrays.
+   // eslint-disable-next-line prefer-rest-params
+   w.dataLayer!.push(arguments);
+  };
    w.gtag('consent','default',{analytics_storage:'granted',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied'});
    w.gtag('js',new Date());w.gtag('config',ID,{send_page_view:false,allow_google_signals:false,allow_ad_personalization_signals:false,page_location:`https://ghstats.dev${route}`,page_title:'GitHub Profile Stats',page_referrer:''});
    const script=document.createElement('script');script.id='ghstats-google-analytics';script.async=true;script.src=`https://www.googletagmanager.com/gtag/js?id=${ID}`;document.head.appendChild(script);
