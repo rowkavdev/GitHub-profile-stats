@@ -1,5 +1,5 @@
 'use client';
-import {useEffect,useState} from 'react';
+import {useCallback,useEffect,useState} from 'react';
 import {usePathname} from 'next/navigation';
 
 const ID='G-ZGXCN93Z7E';
@@ -17,6 +17,15 @@ export default function GoogleAnalyticsConsent() {
  const [choice,setChoice]=useState<Choice>(null),[ready,setReady]=useState(false),[settings,setSettings]=useState(false);
  const path=usePathname();
  useEffect(()=>{try{const saved=localStorage.getItem(KEY);if(saved==='granted'||saved==='denied')setChoice(saved)}catch{}setReady(true)},[]);
+ const applyChoice=useCallback((next:Choice)=>{
+  setChoice(next);setSettings(false);
+  if(choice==='granted'&&next!=='granted'){
+   // Stop the loaded tag immediately in every tab, not only the clicked tab.
+   (window as typeof window & {[key:string]:unknown})[`ga-disable-${ID}`]=true;
+   for(const part of document.cookie.split(';')){const name=part.trim().split('=')[0];if(name.startsWith('_ga'))for(const domain of ['',location.hostname,`.${location.hostname}`])document.cookie=`${name}=; Max-Age=0; path=/;${domain?` domain=${domain};`:''} SameSite=Lax`;}
+   location.reload();
+  }
+ },[choice]);
  useEffect(()=>{
   const changed=(event:StorageEvent)=>{
    if(event.key!==KEY&&event.key!==null)return;
@@ -25,27 +34,18 @@ export default function GoogleAnalyticsConsent() {
   };
   window.addEventListener('storage',changed);
   return()=>window.removeEventListener('storage',changed);
- },[choice]);
+ },[applyChoice]);
  useEffect(()=>{
   if(choice!=='granted'||(window as typeof window & {[key:string]:unknown})[`ga-disable-${ID}`]===true)return;
   const w=window as typeof window & {dataLayer?:unknown[];gtag?:(...args:unknown[])=>void};
   const route=safePath(path||'/');
-  if(!w.gtag){w.dataLayer=w.dataLayer||[];w.gtag=function(){w.dataLayer!.push(arguments)};
+  if(!w.gtag){w.dataLayer=w.dataLayer||[];w.gtag=(...args:unknown[])=>{w.dataLayer!.push(args)};
    w.gtag('consent','default',{analytics_storage:'granted',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied'});
    w.gtag('js',new Date());w.gtag('config',ID,{send_page_view:false,allow_google_signals:false,allow_ad_personalization_signals:false,page_location:`https://ghstats.dev${route}`,page_title:'GitHub Profile Stats',page_referrer:''});
    const script=document.createElement('script');script.id='ghstats-google-analytics';script.async=true;script.src=`https://www.googletagmanager.com/gtag/js?id=${ID}`;document.head.appendChild(script);
   }
   w.gtag('event','page_view',{page_location:`https://ghstats.dev${route}`,page_title:'GitHub Profile Stats',page_referrer:'',page_path:route});
  },[choice,path]);
- function applyChoice(next:Choice) {
-  setChoice(next);setSettings(false);
-  if(choice==='granted'&&next!=='granted'){
-   // Stop the loaded tag immediately in every tab, not only the clicked tab.
-   (window as typeof window & {[key:string]:unknown})[`ga-disable-${ID}`]=true;
-   for(const part of document.cookie.split(';')){const name=part.trim().split('=')[0];if(name.startsWith('_ga'))for(const domain of ['',location.hostname,`.${location.hostname}`])document.cookie=`${name}=; Max-Age=0; path=/;${domain?` domain=${domain};`:''} SameSite=Lax`;}
-   location.reload();
-  }
- }
  function choose(next:'granted'|'denied') {
   store(next);applyChoice(next);
  }
