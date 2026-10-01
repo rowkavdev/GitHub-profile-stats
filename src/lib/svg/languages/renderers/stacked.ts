@@ -31,11 +31,11 @@ export default function renderStackedLanguageChart(
       w = Math.max(0, BAR_W - used);
     }
     used += w;
-    return { lang, pct, w };
+    return { lang, w };
   });
 
   let bx = PAD;
-  const barSegments = segments.map(({ lang, pct, w }) => {
+  const barSegments = segments.map(({ lang, w }) => {
     const rect = `<rect x="${bx}" y="${BAR_Y}" width="${w}" height="${BAR_H}" fill="${lang.color ?? "#586069"}"/>`;
     const label =
       w >= 36
