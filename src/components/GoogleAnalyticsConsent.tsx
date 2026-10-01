@@ -1,10 +1,10 @@
 'use client';
 import {useCallback,useEffect,useState} from 'react';
 import {usePathname} from 'next/navigation';
+import {readSavedChoice,useConsentReady,type Choice} from './analytics-consent-state';
 
 const ID='G-ZGXCN93Z7E';
 const KEY='ghstats-analytics-consent';
-type Choice='granted'|'denied'|null;
 const store=(choice:Choice)=>{try{localStorage.setItem(KEY,choice||'denied')}catch{}};
 // Profile names and query strings can contain personal data. Send route classes,
 // not usernames, repo names, page titles or full browser URLs.
@@ -14,9 +14,9 @@ function safePath(path:string) {
  return segments.length>1?'/[username]/[repo]':'/[username]';
 }
 export default function GoogleAnalyticsConsent() {
- const [choice,setChoice]=useState<Choice>(null),[ready,setReady]=useState(false),[settings,setSettings]=useState(false);
+ const [choice,setChoice]=useState<Choice>(readSavedChoice),[settings,setSettings]=useState(false);
+ const ready=useConsentReady();
  const path=usePathname();
- useEffect(()=>{try{const saved=localStorage.getItem(KEY);if(saved==='granted'||saved==='denied')setChoice(saved)}catch{}setReady(true)},[]);
  const applyChoice=useCallback((next:Choice)=>{
   setChoice(next);setSettings(false);
   if(choice==='granted'&&next!=='granted'){

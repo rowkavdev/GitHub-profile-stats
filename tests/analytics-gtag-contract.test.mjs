@@ -7,7 +7,7 @@ test('gtag commands use Arguments objects, matching the documented Google queue 
  const source=readFileSync('src/components/GoogleAnalyticsConsent.tsx','utf8');
  const code=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;
  const effects=[];let cursor=0;const window={addEventListener(){},removeEventListener(){}};
- const context={exports:{},require:id=>id==='react'?{useCallback:fn=>fn,useState:()=>[['granted',true,false][cursor++],()=>{}],useEffect:fn=>effects.push(fn)}:id==='next/navigation'?{usePathname:()=>'/status'}:{jsx:()=>null,jsxs:()=>null},window,localStorage:{getItem:()=> 'granted'},document:{createElement:()=>({}),head:{appendChild(){}}},Date};
+ const context={exports:{},require:id=>id==='react'?{useCallback:fn=>fn,useState:()=>[['granted',false][cursor++],()=>{}],useEffect:fn=>effects.push(fn)}:id==='./analytics-consent-state'?{readSavedChoice:()=> 'granted',useConsentReady:()=>true}:id==='next/navigation'?{usePathname:()=>'/status'}:{jsx:()=>null,jsxs:()=>null},window,localStorage:{getItem:()=> 'granted'},document:{createElement:()=>({}),head:{appendChild(){}}},Date};
  vm.runInNewContext(code,context);context.exports.default();effects.forEach(fn=>fn());
  const queue=window.dataLayer;
  assert.equal(queue.length,4);
