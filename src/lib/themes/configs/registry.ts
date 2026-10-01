@@ -2,7 +2,9 @@ import { ThemeConfig, ThemeSurface } from "../types";
 import { THEME_DEFINITIONS } from ".";
 
 export const themes: Record<string, ThemeConfig> = Object.fromEntries(
-  THEME_DEFINITIONS.map(({ key, showIn, ...config }) => [key, config]),
+  THEME_DEFINITIONS.map((definition) => [definition.key, Object.fromEntries(
+    Object.entries(definition).filter(([key]) => key !== "key" && key !== "showIn"),
+  ) as ThemeConfig]),
 );
 
 function themesFor(surface: ThemeSurface) {
