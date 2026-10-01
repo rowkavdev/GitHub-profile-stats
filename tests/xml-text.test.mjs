@@ -6,6 +6,8 @@ test('escaped text is valid XML 1.0 even with forbidden controls', () => {
   const input = 'A\x01B\x00C\u000bD\ufffeE\uffffF & <"\' 🙂';
   const escaped = escapeXml(input);
   assert.equal(escaped, 'ABCDEF &amp; &lt;&quot;&apos; 🙂');
+  // This assertion intentionally matches the forbidden XML controls.
+  // eslint-disable-next-line no-control-regex
   assert.doesNotMatch(escaped, /[\u0000-\u0008\u000b\u000c\u000e-\u001f\ufffe\uffff]/u);
 });
 
