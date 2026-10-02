@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "24"
       - name: Check service availability
         run: |
           curl --fail --silent --show-error --retry 2 https://ghstats.dev/api/status -o /tmp/status.json
