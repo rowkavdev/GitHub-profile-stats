@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { sanitizeUsername, sanitizeHexParam, formatNumber } from "@/lib/sanitize";
+import { sanitizeUsername, sanitizeHexParam, formatNumber, truncateCodePoints } from "@/lib/sanitize";
 import { getWorkflowRuns } from "@/lib/workflow-runs";
 import { resolveWorkflowOwners } from "@/lib/workflow-scope";
 import { renderBadge, resolveBadgeStyle } from "@/lib/svg/badge";
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
   }
   try {
     const { count } = await getWorkflowRuns(owners);
-    const label = params.get("label")?.trim().slice(0, 32) || "Workflow runs";
+    const label = truncateCodePoints(params.get("label")?.trim() ?? "", 32) || "Workflow runs";
     const accent = sanitizeHexParam(params.get("color")) ?? "4c8eda";
     const svg = renderBadge(label, formatNumber(count), { accent, labelBg: "30363d", text: "ffffff" }, resolveBadgeStyle(params.get("style")));
     return new Response(svg, { status: 200, headers });
