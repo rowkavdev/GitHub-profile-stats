@@ -49,3 +49,15 @@ test('count failure is caught at the public profile route, not returned as a suc
   const response=await GET({nextUrl:new URL('https://local/api/profile?repo=owner/repo')});
   assert.equal(response.status,500);assert.match(await response.text(),/403/);
 });
+test('contributors 204 from an empty repository counts as zero instead of failing JSON parsing', async () => {
+  const original = globalThis.fetch;
+  globalThis.fetch = async url => {
+    if (url.includes('/search/issues')) return Response.json({ total_count: 0, incomplete_results: false });
+    if (url.includes('/contributors')) return new Response(null, { status: 204 });
+    if (url.includes('/commits')) return Response.json([]);
+    if (url.includes('/languages')) return Response.json({});
+    return Response.json({ owner: { login: 'owner' }, name: 'repo', contributors_url: 'https://api.github.com/repos/owner/repo/contributors', commits_url: 'https://api.github.com/repos/owner/repo/commits{/sha}', stargazers_count: 0, forks_count: 0 });
+  };
+  try { assert.equal((await fetchRepositoryCardData('owner', 'repo')).contributors, 0); }
+  finally { globalThis.fetch = original; }
+});
