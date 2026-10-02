@@ -267,3 +267,16 @@ Inactive counters reset after expiration; active cards keep their totals. No
 existing keys are deleted during deployment. Untouched legacy keys have no TTL
 until their next view. Retention bounds lifetime, not the number of requests an
 attacker can make inside the 90-day window.
+### Scheduled status collection
+
+Public `/api/status`, `/api/status/badge`, and `/status` read the latest stored
+report; reads do not probe services or append uptime history. Configure
+`CRON_SECRET` on the deployment and have an hourly scheduler call
+`/api/status/collect` with `Authorization: Bearer <CRON_SECRET>`. A Redis atomic
+lock allows at most one collection per hour, including concurrent calls.
+Missing configuration fails closed. Before deploying this change, configure
+and verify the scheduler; do not stop the old collector first. The uptime job
+calls the authenticated collector and checks the body with
+`scripts/check-uptime.mjs`. Set the same `CRON_SECRET` as a GitHub Actions
+repository secret and Vercel environment variable. Reports older than two hours
+are unavailable, so a stopped scheduler cannot keep showing operational.

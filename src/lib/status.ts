@@ -251,6 +251,35 @@ function computeAverageResponseMs(
   return Math.round(total / values.length);
 }
 
+const STATUS_REPORT_KEY = "status:report";
+const COLLECTION_LOCK_KEY = "status:collection-lock";
+const COLLECTION_INTERVAL_SECONDS = 3600;
+
+/** Public readers never perform probes or mutate history. */
+export async function readStatusReport(): Promise<StatusReport | null> {
+  const redis = getRedis();
+  if (!redis) return null;
+  const report = await redis.get<StatusReport>(STATUS_REPORT_KEY);
+  if (!report) return null;
+  const age = Date.now() - Date.parse(report.checkedAt);
+  if (!Number.isFinite(age) || age < 0 || age > 2 * COLLECTION_INTERVAL_SECONDS * 1000) return null;
+  return report;
+}
+
+/** Atomic hourly guard prevents duplicate schedules and concurrent probes. */
+export async function collectScheduledStatusReport(): Promise<StatusReport | null> {
+  const redis = getRedis();
+  if (!redis) throw new Error("Status storage is not configured");
+  const acquired = await redis.set(COLLECTION_LOCK_KEY, new Date().toISOString(), {
+    nx: true, ex: COLLECTION_INTERVAL_SECONDS,
+  });
+  if (!acquired) return readStatusReport();
+  // Keep the lock on failure: repeated retries must not flood upstreams.
+  const report = await collectStatusReport();
+  await redis.set(STATUS_REPORT_KEY, report, { ex: HISTORY_TTL_SECONDS });
+  return report;
+}
+
 export async function collectStatusReport(): Promise<StatusReport> {
   const checkedAt = new Date().toISOString();
   const snapshots = await Promise.all(

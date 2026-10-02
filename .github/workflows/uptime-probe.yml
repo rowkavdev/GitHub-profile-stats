@@ -16,7 +16,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Check service availability
+      - name: Collect and check service availability
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
-          curl --fail --silent --show-error --retry 2 https://ghstats.dev/api/status -o /tmp/status.json
+          test -n "$CRON_SECRET" || { echo "CRON_SECRET is not configured" >&2; exit 1; }
+          curl --fail --silent --show-error --retry 2 -H "Authorization: Bearer $CRON_SECRET" https://ghstats.dev/api/status/collect -o /tmp/status.json
           node scripts/check-uptime.mjs < /tmp/status.json
