@@ -85,32 +85,28 @@ function calculateStreak(days: ContributionDay[]): {
   current: number;
   longest: number;
 } {
-  const sorted = [...days].sort((a, b) => a.date.localeCompare(b.date));
+  // Streaks follow calendar dates, not neighbouring array entries, so a
+  // missing or stale date ends a run.
+  const dayNumber = (date: string) => Math.floor(Date.parse(`${date}T00:00:00Z`) / 86_400_000);
+  const active = [...new Set(
+    days.filter((day) => day.contributionCount > 0).map((day) => dayNumber(day.date)),
+  )].sort((a, b) => a - b);
+  const todayNumber = Math.floor(Date.now() / 86_400_000);
+  const past = active.filter((n) => n <= todayNumber);
 
   let longest = 0;
-  let currentRun = 0;
-  for (const day of sorted) {
-    if (day.contributionCount > 0) {
-      currentRun++;
-      longest = Math.max(longest, currentRun);
-    } else {
-      currentRun = 0;
-    }
+  let run = 0;
+  for (let i = 0; i < past.length; i++) {
+    run = i > 0 && past[i] === past[i - 1] + 1 ? run + 1 : 1;
+    longest = Math.max(longest, run);
   }
 
+  // An empty today does not end a streak that ran through yesterday.
   let current = 0;
-  const today = new Date().toISOString().split("T")[0];
-
-  for (let i = sorted.length - 1; i >= 0; i--) {
-    const day = sorted[i];
-    if (day.date > today) continue;
-
-    if (day.contributionCount > 0) {
-      current++;
-    } else {
-      if (day.date === today) continue;
-      break;
-    }
+  const last = past[past.length - 1];
+  if (last !== undefined && last >= todayNumber - 1) {
+    current = 1;
+    for (let i = past.length - 2; i >= 0 && past[i] === past[i + 1] - 1; i--) current++;
   }
 
   return { current, longest };
