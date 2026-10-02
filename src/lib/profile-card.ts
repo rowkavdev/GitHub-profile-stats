@@ -172,6 +172,8 @@ export function parseRepository(value: string | null): { owner: string; repo: st
 async function repositoryPageCount(url: string, headers: Record<string,string>): Promise<number> {
   const response = await fetch(url, {headers, cache: "no-store"});
   if (!response.ok) throw new Error(`GitHub repository count request failed: ${response.status}`);
+  // GitHub answers an empty repository's contributors with 204 and no body.
+  if (response.status === 204) return 0;
   const last = (response.headers.get("link") || "").match(/[?&]page=(\d+)>; rel="last"/);
   if (last) {
     const count = Number(last[1]);
