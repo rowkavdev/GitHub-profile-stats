@@ -7,6 +7,7 @@ import {
   sanitizeUsername,
   sanitizeHexParam,
   formatNumber,
+  truncateCodePoints,
 } from "@/lib/sanitize";
 import { GitHubStats } from "@/lib/types";
 import { getCacheHeaders, getMiniMetricCacheProfile } from "@/lib/cache";
@@ -69,7 +70,7 @@ export async function GET(request: NextRequest) {
   const customLabel = params.get("label")?.trim();
   const label =
     customLabel && customLabel.length > 0
-      ? customLabel.slice(0, 32)
+      ? truncateCodePoints(customLabel, 32)
       : allTime && ["commits", "prs", "issues", "hours"].includes(metricKey) ? `All-time ${metric.label}` : metric.label;
   const style = resolveBadgeStyle(params.get("style"));
 
