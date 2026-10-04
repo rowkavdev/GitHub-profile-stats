@@ -28,3 +28,7 @@ test("org parsing matches the API's parseExtraOwners", async () => {
     assert.deepEqual(socialCardUrls("rowkav09", { ...base, orgs: raw }).orgs, parseExtraOwners(raw, "rowkav09"), raw);
   }
 });
+
+test("SVG download is named like the PNG download", () => {
+  assert.equal(socialCardUrls("rowkav09", base).svgFileName, "rowkav09-github-card.svg");
+});
