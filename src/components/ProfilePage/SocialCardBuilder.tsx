@@ -19,7 +19,7 @@ export default function SocialCardBuilder({ username }: { username: string }) {
   const [style, setStyle] = useState<(typeof PROFILE_CARD_STYLES)[number]>("github");
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
   const [orgsInput, setOrgsInput] = useState("");
-  const { svgUrl, pngUrl, maxOrgs } = socialCardUrls(username, { type, theme, style, orgs: orgsInput });
+  const { svgUrl, pngUrl, svgFileName, maxOrgs } = socialCardUrls(username, { type, theme, style, orgs: orgsInput });
   const markdown = useMemo(
     () => `[![${username}'s GitHub ${type} card](https://ghstats.dev${svgUrl})](${REPO_URL})`,
     [svgUrl, type, username],
@@ -105,6 +105,7 @@ export default function SocialCardBuilder({ username }: { username: string }) {
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
             <a href={pngUrl} className="rounded-lg bg-[#238636] px-4 py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-[#2ea043]">Download PNG</a>
+            <a href={svgUrl} download={svgFileName} className="rounded-lg border border-[#30363d] px-4 py-2.5 text-center text-sm font-semibold text-[#c9d1d9] transition-colors hover:border-[#58a6ff]">Download SVG</a>
             <a href={svgUrl} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-[#30363d] px-4 py-2.5 text-center text-sm font-semibold text-[#c9d1d9] transition-colors hover:border-[#58a6ff]">Open SVG</a>
           </div>
         </div>

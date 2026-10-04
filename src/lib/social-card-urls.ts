@@ -43,6 +43,8 @@ export function socialCardUrls(username: string, options: SocialCardOptions) {
   return {
     svgUrl: `/api/profile?${query}`,
     pngUrl: `/api/profile/png?${query}&download=true`,
+    // Same name pattern as the PNG route's Content-Disposition.
+    svgFileName: `${username}-github-card.svg`,
     orgs: owners,
     maxOrgs: MAX_ORGS,
   };
