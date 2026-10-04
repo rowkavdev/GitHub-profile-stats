@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { PROFILE_CARD_STYLES } from "@/lib/social-card-layout";
+import { socialCardUrls } from "@/lib/social-card-urls";
 
 const TYPES = [
   { key: "profile", label: "Profile" },
@@ -17,9 +18,8 @@ export default function SocialCardBuilder({ username }: { username: string }) {
   const [theme, setTheme] = useState<(typeof THEMES)[number]>("github");
   const [style, setStyle] = useState<(typeof PROFILE_CARD_STYLES)[number]>("github");
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
-  const encoded = encodeURIComponent(username);
-  const svgUrl = `/api/profile?username=${encoded}&type=${type}&theme=${theme}&style=${style}`;
-  const pngUrl = `/api/profile/png?username=${encoded}&type=${type}&theme=${theme}&style=${style}&download=true`;
+  const [orgsInput, setOrgsInput] = useState("");
+  const { svgUrl, pngUrl, maxOrgs } = socialCardUrls(username, { type, theme, style, orgs: orgsInput });
   const markdown = useMemo(
     () => `[![${username}'s GitHub ${type} card](https://ghstats.dev${svgUrl})](${REPO_URL})`,
     [svgUrl, type, username],
@@ -74,6 +74,20 @@ export default function SocialCardBuilder({ username }: { username: string }) {
               ))}
             </div>
           </fieldset>
+          <div>
+            <label htmlFor="social-card-orgs" className="label-text">Include organisations (optional)</label>
+            <input
+              id="social-card-orgs"
+              type="text"
+              value={orgsInput}
+              onChange={(event) => setOrgsInput(event.target.value)}
+              placeholder="rowkavdev, another-org"
+              autoComplete="off"
+              spellCheck={false}
+              className="mt-2 w-full rounded-lg border border-[#30363d] bg-[#161b22] px-3 py-2 text-sm text-[#c9d1d9] placeholder:text-[#484f58] focus:border-[#58a6ff] focus:outline-none"
+            />
+            <p className="mt-1 text-xs text-[#484f58]">Up to {maxOrgs}, comma separated. Their public repos count towards stars and repos.</p>
+          </div>
         </div>
 
         <div className="min-w-0 space-y-5">
