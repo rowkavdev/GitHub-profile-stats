@@ -1,6 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: process.env.VERCEL ? undefined : "standalone",
+  // Native binding: load it from node_modules at runtime instead of bundling it.
+  serverExternalPackages: ["@resvg/resvg-js"],
+  // The PNG export reads bundled fonts at runtime; make sure they ship with the route.
+  outputFileTracingIncludes: {
+    "/api/profile/png": ["./src/assets/fonts/**"],
+  },
   async headers() {
     return [
       {
