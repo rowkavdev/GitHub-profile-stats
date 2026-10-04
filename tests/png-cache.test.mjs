@@ -15,7 +15,7 @@ function loadRoute() {
   loadedModule.filename = routePath;
   loadedModule.paths = Module._nodeModulePaths(join(process.cwd(), 'src/app/api/profile/png'));
   loadedModule.require = (id) => {
-    if (id === 'next/og') return { ImageResponse: class extends Response { constructor() { super('png', { headers: { 'Content-Type': 'image/png' } }); } } };
+    if (id === '@/lib/svg-to-png') return { svgToPng: () => new Uint8Array([0x89, 0x50, 0x4e, 0x47]) };
     if (id === '@/lib/profile-card') return {
       parseRepository: (value) => value === 'octocat/Hello-World' ? { owner: 'octocat', repo: 'Hello-World' } : null,
       resolveProfileCardOptions: () => ({ width: 1200, height: 627 }),
@@ -36,6 +36,7 @@ test('successful PNG card sets edge cache headers, matching the SVG default prof
   const url = 'https://ghstats.dev/api/profile/png?repo=octocat%2FHello-World';
   const response = await GET({ nextUrl: new URL(url) });
   assert.equal(response.status, 200);
+  assert.equal(response.headers.get('Content-Type'), 'image/png');
   assert.match(response.headers.get('Cache-Control') ?? '', /s-maxage=1800/);
   assert.match(response.headers.get('CDN-Cache-Control') ?? '', /s-maxage=1800/);
   assert.match(response.headers.get('Vercel-CDN-Cache-Control') ?? '', /s-maxage=1800/);

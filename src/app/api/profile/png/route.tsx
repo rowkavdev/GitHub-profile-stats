@@ -1,12 +1,13 @@
-import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
 import { fetchGitHubStats, parseExtraOwners } from "@/lib/github";
 import { sanitizeUsername } from "@/lib/sanitize";
 import { getCacheHeaders } from "@/lib/cache";
+import { svgToPng } from "@/lib/svg-to-png";
 import { fetchRepositoryCardData, parseRepository, renderProfileCard, renderRepositoryCard, resolveProfileCardOptions } from "@/lib/profile-card";
 
 export const dynamic = "force-dynamic";
-export const runtime = "edge";
+// Node runtime: the rasteriser loads bundled fonts, which the edge runtime cannot.
+export const runtime = "nodejs";
 
 async function avatarDataUri(url: string): Promise<string> {
   try {
@@ -35,17 +36,9 @@ export async function GET(request: NextRequest) {
       const stats = await fetchGitHubStats(username!, false, extraOwners);
       svg = renderProfileCard({ ...stats, avatarDataUri: await avatarDataUri(stats.avatarUrl) }, options);
     }
-    const dataUri = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`;
-    const response = new ImageResponse(
-      <div style={{ display: "flex", width: "100%", height: "100%" }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={dataUri} width={options.width} height={options.height} alt="" />
-      </div>,
-      { width: options.width, height: options.height },
-    );
-    for (const [name, value] of Object.entries(getCacheHeaders("default"))) {
-      response.headers.set(name, value);
-    }
+    const response = new Response(svgToPng(svg, options.width) as BodyInit, {
+      headers: { "Content-Type": "image/png", ...getCacheHeaders("default") },
+    });
     if (request.nextUrl.searchParams.get("download") === "true") {
       response.headers.set("Content-Disposition", `attachment; filename="${repository ? `${repository.owner}-${repository.repo}` : username}-github-card.png"`);
     }
