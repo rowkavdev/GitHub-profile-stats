@@ -169,8 +169,14 @@ export function parseRepository(value: string | null): { owner: string; repo: st
   return match ? { owner: match[1], repo: match[2] } : null;
 }
 
-async function repositoryPageCount(url: string, headers: Record<string,string>): Promise<number> {
+async function repositoryPageCount(url: string, headers: Record<string,string>, allowEmptyCommits = false): Promise<number> {
   const response = await fetch(url, {headers, cache: "no-store"});
+  // Only the commits endpoint's explicit empty-repository response is a zero.
+  // Other conflicts include temporarily unavailable repositories and must fail.
+  if (allowEmptyCommits && response.status === 409) {
+    const error: unknown = await response.json().catch(() => null);
+    if (error !== null && typeof error === "object" && "message" in error && error.message === "Git Repository is empty.") return 0;
+  }
   if (!response.ok) throw new Error(`GitHub repository count request failed: ${response.status}`);
   if (response.status === 204) return 0;
   const last = (response.headers.get("link") || "").match(/[?&]page=(\d+)>; rel="last"/);
@@ -214,7 +220,7 @@ export async function fetchRepositoryCardData(owner: string, repo: string): Prom
     throw new Error("GitHub returned an incomplete issue count");
   }
   const contributors = await repositoryPageCount(`${json.contributors_url}?per_page=1&anon=true`, headers);
-  const commits = await repositoryPageCount(`${json.commits_url.replace("{/sha}", "")}?per_page=1`, headers);
+  const commits = await repositoryPageCount(`${json.commits_url.replace("{/sha}", "")}?per_page=1`, headers, true);
   const languages = await repositoryLanguages(owner, repo, headers);
   return { owner: json.owner.login, name: json.name, description: json.description || "", ownerAvatarUrl: json.owner.avatar_url, avatarDataUri: "", contributors, commits, openIssues: issues.total_count, stars: json.stargazers_count, forks: json.forks_count, languages };
 }
