@@ -61,3 +61,26 @@ test('contributors 204 from an empty repository counts as zero instead of failin
   try { assert.equal((await fetchRepositoryCardData('owner', 'repo')).contributors, 0); }
   finally { globalThis.fetch = original; }
 });
+
+
+for (const [label, response, empty] of [
+  ['explicit empty repository', () => Response.json({message:'Git Repository is empty.'},{status:409}), true],
+  ['unavailable repository conflict', () => Response.json({message:'Repository unavailable'},{status:409}), false],
+  ['malformed conflict', () => new Response('not JSON',{status:409}), false],
+  ['forbidden commits', () => Response.json({message:'Git Repository is empty.'},{status:403}), false],
+]) {
+  test(`repository commits handles ${label} without hiding unrelated failures`, async () => {
+    const original = globalThis.fetch;
+    globalThis.fetch = async url => {
+      if (url.includes('/search/issues')) return Response.json({total_count:0,incomplete_results:false});
+      if (url.includes('/contributors')) return new Response(null,{status:204});
+      if (url.includes('/commits')) return response();
+      if (url.includes('/languages')) return Response.json({});
+      return Response.json({owner:{login:'owner'},name:'empty',contributors_url:'https://api.github.com/repos/owner/empty/contributors',commits_url:'https://api.github.com/repos/owner/empty/commits{/sha}',stargazers_count:0,forks_count:0});
+    };
+    try {
+      if(empty) { const data = await fetchRepositoryCardData('owner','empty'); assert.equal(data.commits,0); assert.equal(data.contributors,0); assert.equal(data.openIssues,0); }
+      else await assert.rejects(fetchRepositoryCardData('owner','empty'), /repository count request failed/);
+    } finally { globalThis.fetch = original; }
+  });
+}
