@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
-  collectStatusReport,
+  readStatusReport,
   formatMilliseconds,
   formatPercentage,
   getStatusCopy,
@@ -57,7 +57,8 @@ function responseTone(ms: number | null): string {
 }
 
 export default async function StatusPage() {
-  const report = await collectStatusReport();
+  const report = await readStatusReport();
+  if (!report) return <main className="mx-auto max-w-6xl px-6 py-16"><h1 className="text-4xl font-bold">Service status</h1><p className="mt-4">No status report is available yet. Scheduled collection may not be configured.</p></main>;
   const copy = getStatusCopy(report.overall.status);
 
   return (
