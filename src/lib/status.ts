@@ -133,6 +133,10 @@ async function probeEndpoint(
       signal: timeoutSignal(STATUS_TIMEOUT_MS),
     });
 
+    // Headers alone decide probe health; discard unused bodies without
+    // waiting for cleanup or letting it change the recorded status.
+    try { Promise.resolve(response.body?.cancel?.()).catch(() => {}); } catch {}
+
     return {
       key: definition.key,
       label: definition.label,
