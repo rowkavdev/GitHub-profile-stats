@@ -133,7 +133,10 @@ export function resolveProfileCardOptions(params: URLSearchParams): ProfileCardO
   const type = PROFILE_CARD_TYPES.includes(params.get("type") as ProfileCardType) ? params.get("type") as ProfileCardType : "repo";
   const themeName = params.get("theme") || "github";
   const preset = Object.hasOwn(PROFILE_THEMES, themeName) ? PROFILE_THEMES[themeName] : PROFILE_THEMES.github;
-  const custom = (key: keyof ProfileCardTheme) => sanitizeHexParam(params.get(key)) || preset[key];
+  const custom = (key: keyof ProfileCardTheme) => {
+    const hex = sanitizeHexParam(params.get(key));
+    return hex ? `#${hex}` : preset[key];
+  };
   const style = PROFILE_CARD_STYLES.includes(params.get("style") as ProfileCardStyle) ? params.get("style") as ProfileCardStyle : "github";
   const compact = type === "compact" && style === "github";
   const heights = { github: 500, compact: 430, split: 550, editorial: 550, minimal: 400 };
