@@ -26,8 +26,13 @@ export default function renderHorizontalListLanguageChart(
   const rx = options.border_radius;
 
   let bx = PAD;
-  const barSegments = languages.map((lang) => {
-    const w = Math.max(2, Math.round((lang.size / totalSize) * BAR_W));
+  const barSegments = languages.map((lang, idx) => {
+    // Leave each remaining nonzero language visible inside the clip area.
+    const reserved = (languages.length - idx - 1) * 2;
+    const w = Math.min(
+      Math.max(2, Math.round((lang.size / totalSize) * BAR_W)),
+      Math.max(0, PAD + BAR_W - bx - reserved),
+    );
     const el = `<rect x="${bx}" y="${BAR_Y}" width="${w}" height="${BAR_H}" fill="${lang.color ?? "#586069"}"/>`;
     bx += w;
     return el;
