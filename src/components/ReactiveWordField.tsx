@@ -2,27 +2,6 @@
 
 import { useEffect, useRef } from "react";
 
-const WORDS = [
-  "GitHub",
-  "Profile",
-  "Stats",
-  "Commits",
-  "Stars",
-  "PullRequests",
-  "Issues",
-  "Contributions",
-  "Repositories",
-  "Followers",
-  "Streak",
-  "Languages",
-  "OpenSource",
-  "README",
-  "Build",
-  "Share",
-  "Create",
-  "Explore",
-];
-
 type WordParticle = {
   word: string;
   baseX: number;
@@ -40,6 +19,14 @@ type Ripple = {
   radius: number;
   strength: number;
 };
+
+type DailyUsersResponse = {
+  date: string;
+  users: string[];
+};
+
+const USERNAME_PATTERN = /^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$/;
+const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 
 function seededRandom(seed: number) {
   let value = seed >>> 0;
@@ -68,6 +55,11 @@ export default function ReactiveWordField() {
     let width = 0;
     let height = 0;
     let lastTrailAt = 0;
+    let words: string[] = [];
+    let fieldDate = "";
+    let stopped = false;
+    let refreshInFlight = false;
+    const abortController = new AbortController();
 
     const buildField = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
@@ -84,12 +76,20 @@ export default function ReactiveWordField() {
       const random = seededRandom(width * 73856093 + height * 19349663);
       const nextParticles: WordParticle[] = [];
       const rowHeight = 10;
+      let wordIndex = words.length > 0 ? Math.floor(random() * words.length) : 0;
+
+      if (words.length === 0) {
+        particles = [];
+        ripples = [];
+        return;
+      }
 
       for (let row = 0, y = 4; y < height + rowHeight; row += 1, y += rowHeight) {
         let x = row % 2 === 0 ? -18 : -42;
 
         while (x < width + 50) {
-          const word = WORDS[Math.floor(random() * WORDS.length)];
+          const word = words[wordIndex % words.length];
+          wordIndex += 1;
           const measured = context.measureText(word).width;
           const jitter = (random() - 0.5) * 1.7;
           nextParticles.push({
@@ -141,6 +141,50 @@ export default function ReactiveWordField() {
     const onPointerLeave = () => {
       pointer.active = false;
       pointer.down = false;
+    };
+
+    const refreshUsers = async () => {
+      if (refreshInFlight) return;
+      refreshInFlight = true;
+
+      try {
+        const response = await fetch("/api/users/today", {
+          cache: "no-store",
+          signal: abortController.signal,
+        });
+        if (!response.ok) return;
+
+        const payload = (await response.json()) as Partial<DailyUsersResponse>;
+        const nextWords = Array.isArray(payload.users)
+          ? payload.users
+              .filter(
+                (username): username is string =>
+                  typeof username === "string" && USERNAME_PATTERN.test(username),
+              )
+              .slice(0, 10_000)
+          : [];
+        const nextDate = typeof payload.date === "string" ? payload.date : "";
+
+        if (
+          stopped ||
+          (nextDate === fieldDate &&
+            nextWords.length === words.length &&
+            nextWords.every((word, index) => word === words[index]))
+        ) {
+          return;
+        }
+
+        words = nextWords;
+        fieldDate = nextDate;
+        buildField();
+        if (reducedMotion.matches && !animationFrame) render();
+      } catch (error) {
+        if (!(error instanceof DOMException && error.name === "AbortError")) {
+          // The decorative field can stay empty when its optional feed is unavailable.
+        }
+      } finally {
+        refreshInFlight = false;
+      }
     };
 
     const render = () => {
@@ -217,6 +261,8 @@ export default function ReactiveWordField() {
 
     buildField();
     render();
+    void refreshUsers();
+    const refreshTimer = window.setInterval(refreshUsers, REFRESH_INTERVAL_MS);
 
     const onResize = () => {
       buildField();
@@ -236,6 +282,9 @@ export default function ReactiveWordField() {
     reducedMotion.addEventListener("change", onMotionPreferenceChange);
 
     return () => {
+      stopped = true;
+      abortController.abort();
+      window.clearInterval(refreshTimer);
       window.cancelAnimationFrame(animationFrame);
       window.removeEventListener("resize", onResize);
       window.removeEventListener("pointermove", onPointerMove);

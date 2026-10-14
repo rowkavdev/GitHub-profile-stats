@@ -18,6 +18,12 @@ test("reactive background listens without intercepting page controls", async () 
   assert.match(css, /\.reactive-word-field[\s\S]*pointer-events:\s*none/);
 });
 
+test("reactive background uses only today's successful card usernames", () => {
+  assert.match(source, /fetch\("\/api\/users\/today"/);
+  assert.match(source, /const word = words\[wordIndex % words\.length\]/);
+  assert.doesNotMatch(source, /const WORDS =/);
+});
+
 test("reactive background respects reduced-motion preferences", () => {
   assert.match(source, /prefers-reduced-motion:\s*reduce/);
   assert.match(source, /reducedMotion\.matches/);
