@@ -1,7 +1,8 @@
 import { Redis } from "@upstash/redis";
 
 const USERS_SET_KEY = "embed:users";
-const DAILY_USERS_RETENTION_SECONDS = 3 * 24 * 60 * 60;
+const RECENT_USER_DAYS = 7;
+const DAILY_USERS_RETENTION_SECONDS = 8 * 24 * 60 * 60;
 
 function dailyUsersKey(date: Date): string {
   return `embed:users:daily:${date.toISOString().slice(0, 10)}`;
@@ -38,12 +39,22 @@ export async function getUserCount(): Promise<number> {
   return await redis.scard(USERS_SET_KEY);
 }
 
-/** Return the distinct public GitHub usernames whose cards rendered today (UTC). */
-export async function getTodaysUsers(date = new Date()): Promise<string[]> {
+/** Return distinct public GitHub usernames whose cards rendered in the last 7 UTC days. */
+export async function getRecentUsers(date = new Date()): Promise<string[]> {
   const redis = getRedis();
   if (!redis) return [];
-  const users = await redis.smembers<string[]>(dailyUsersKey(date));
-  return users.sort((left, right) => left.localeCompare(right));
+
+  const dailyUsers = await Promise.all(
+    Array.from({ length: RECENT_USER_DAYS }, (_, dayOffset) => {
+      const day = new Date(date);
+      day.setUTCDate(day.getUTCDate() - dayOffset);
+      return redis.smembers<string[]>(dailyUsersKey(day));
+    }),
+  );
+
+  return [...new Set(dailyUsers.flat())].sort((left, right) =>
+    left.localeCompare(right),
+  );
 }
 
 const VISITS_KEY = "embed:visits";

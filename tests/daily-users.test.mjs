@@ -18,7 +18,7 @@ function load(file, stubs) {
   return loaded.exports;
 }
 
-test("daily users are normalized, date-scoped, sorted, and short-lived", async () => {
+test("recent users are normalized, deduplicated across seven UTC days, and short-lived", async () => {
   const commands = [];
   const dailyKey = "embed:users:daily:2026-10-15";
 
@@ -42,7 +42,9 @@ test("daily users are normalized, date-scoped, sorted, and short-lived", async (
 
     async smembers(key) {
       commands.push(["smembers", key]);
-      return ["zed", "alice"];
+      if (key.endsWith("2026-10-15")) return ["zed", "alice"];
+      if (key.endsWith("2026-10-14")) return ["bob", "alice"];
+      return [];
     }
   }
 
@@ -58,12 +60,18 @@ test("daily users are normalized, date-scoped, sorted, and short-lived", async (
     const date = new Date("2026-10-15T12:00:00.000Z");
 
     await tracking.trackUser("OctoCat", date);
-    assert.deepEqual(await tracking.getTodaysUsers(date), ["alice", "zed"]);
+    assert.deepEqual(await tracking.getRecentUsers(date), ["alice", "bob", "zed"]);
     assert.deepEqual(commands, [
       ["sadd", "embed:users", "octocat"],
       ["sadd", dailyKey, "octocat"],
-      ["expire", dailyKey, 259200],
-      ["smembers", dailyKey],
+      ["expire", dailyKey, 691200],
+      ["smembers", "embed:users:daily:2026-10-15"],
+      ["smembers", "embed:users:daily:2026-10-14"],
+      ["smembers", "embed:users:daily:2026-10-13"],
+      ["smembers", "embed:users:daily:2026-10-12"],
+      ["smembers", "embed:users:daily:2026-10-11"],
+      ["smembers", "embed:users:daily:2026-10-10"],
+      ["smembers", "embed:users:daily:2026-10-09"],
     ]);
   } finally {
     if (previousUrl === undefined) delete process.env.UPSTASH_REDIS_REST_URL;

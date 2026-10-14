@@ -20,7 +20,7 @@ body {
 .site-content {
   position: relative;
   z-index: 1;
-  background: rgb(13 17 23 / 84%);
+  background: rgb(13 17 23 / 72%);
 }
 
 /* ─── Smooth scroll ─── */

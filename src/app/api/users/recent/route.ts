@@ -1,4 +1,4 @@
-import { getTodaysUsers } from "@/lib/tracking";
+import { getRecentUsers } from "@/lib/tracking";
 
 export const dynamic = "force-dynamic";
 
@@ -8,12 +8,15 @@ const HEADERS = {
 } as const;
 
 export async function GET() {
-  const now = new Date();
-  const users = await getTodaysUsers(now);
+  const end = new Date();
+  const start = new Date(end);
+  start.setUTCDate(start.getUTCDate() - 6);
+  const users = await getRecentUsers(end);
 
   return new Response(
     JSON.stringify({
-      date: now.toISOString().slice(0, 10),
+      startDate: start.toISOString().slice(0, 10),
+      endDate: end.toISOString().slice(0, 10),
       users,
     }),
     { status: 200, headers: HEADERS },

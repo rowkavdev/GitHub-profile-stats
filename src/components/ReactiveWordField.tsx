@@ -20,8 +20,9 @@ type Ripple = {
   strength: number;
 };
 
-type DailyUsersResponse = {
-  date: string;
+type RecentUsersResponse = {
+  startDate: string;
+  endDate: string;
   users: string[];
 };
 
@@ -56,7 +57,7 @@ export default function ReactiveWordField() {
     let height = 0;
     let lastTrailAt = 0;
     let words: string[] = [];
-    let fieldDate = "";
+    let fieldPeriod = "";
     let stopped = false;
     let refreshInFlight = false;
     const abortController = new AbortController();
@@ -148,13 +149,13 @@ export default function ReactiveWordField() {
       refreshInFlight = true;
 
       try {
-        const response = await fetch("/api/users/today", {
+        const response = await fetch("/api/users/recent", {
           cache: "no-store",
           signal: abortController.signal,
         });
         if (!response.ok) return;
 
-        const payload = (await response.json()) as Partial<DailyUsersResponse>;
+        const payload = (await response.json()) as Partial<RecentUsersResponse>;
         const nextWords = Array.isArray(payload.users)
           ? payload.users
               .filter(
@@ -163,11 +164,11 @@ export default function ReactiveWordField() {
               )
               .slice(0, 10_000)
           : [];
-        const nextDate = typeof payload.date === "string" ? payload.date : "";
+        const nextPeriod = `${payload.startDate ?? ""}:${payload.endDate ?? ""}`;
 
         if (
           stopped ||
-          (nextDate === fieldDate &&
+          (nextPeriod === fieldPeriod &&
             nextWords.length === words.length &&
             nextWords.every((word, index) => word === words[index]))
         ) {
@@ -175,7 +176,7 @@ export default function ReactiveWordField() {
         }
 
         words = nextWords;
-        fieldDate = nextDate;
+        fieldPeriod = nextPeriod;
         buildField();
         if (reducedMotion.matches && !animationFrame) render();
       } catch (error) {
