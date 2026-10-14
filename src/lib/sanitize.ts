@@ -58,3 +58,8 @@ export function parseFiniteFloat(raw: string | null, fallback: number): number {
   const value = parseFloat(raw ?? "");
   return Number.isFinite(value) ? value : fallback;
 }
+
+/** Cap text at `max` code points. `slice` counts UTF-16 units and can cut an emoji in half. */
+export function truncateCodePoints(text: string, max: number): string {
+  return Array.from(text).slice(0, max).join("");
+}
