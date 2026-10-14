@@ -174,16 +174,22 @@ export function parseRepository(value: string | null): { owner: string; repo: st
 
 async function repositoryPageCount(url: string, headers: Record<string,string>, allowEmptyCommits = false): Promise<number> {
   const response = await fetch(url, {headers, cache: "no-store"});
+  // Status and Link-header branches try to cancel a present reply body.
+  // The JSON and explicit empty-commits 409 paths consume their bodies.
+  // Cancellation is best-effort: do not await its promise, and ignore errors.
+  // A custom synchronous cancel method may still block.
+  const discardBody = () => { try { Promise.resolve(response.body?.cancel?.()).catch(() => {}); } catch {} };
   // Only the commits endpoint's explicit empty-repository response is a zero.
   // Other conflicts include temporarily unavailable repositories and must fail.
   if (allowEmptyCommits && response.status === 409) {
     const error: unknown = await response.json().catch(() => null);
     if (error !== null && typeof error === "object" && "message" in error && error.message === "Git Repository is empty.") return 0;
   }
-  if (!response.ok) throw new Error(`GitHub repository count request failed: ${response.status}`);
-  if (response.status === 204) return 0;
+  if (!response.ok) { discardBody(); throw new Error(`GitHub repository count request failed: ${response.status}`); }
+  if (response.status === 204) { discardBody(); return 0; }
   const last = (response.headers.get("link") || "").match(/[?&]page=(\d+)>; rel="last"/);
   if (last) {
+    discardBody();
     const count = Number(last[1]);
     if (!Number.isSafeInteger(count) || count < 0) throw new Error("GitHub returned an invalid repository count");
     return count;
