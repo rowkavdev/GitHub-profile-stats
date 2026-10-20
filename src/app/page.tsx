@@ -1,5 +1,6 @@
 import CardPreview from "@/components/CardPreview/CardPreview";
 import HeroCard from "@/components/HeroCard";
+import ReactiveWordField from "@/components/ReactiveWordField";
 import { BADGE_STYLES } from "@/lib/svg/badge/configs/registry";
 import { SITE, SITE_ROUTES } from "@/lib/site";
 
@@ -132,27 +133,29 @@ const HIDE_KEYS = [
 
 export default function Home() {
   return (
-    <main className="min-h-screen">
-      <header className="border-b border-[#21262d] bg-[#010409]">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <span className="text-lg font-bold tracking-tight">
-            <span className="text-[#58a6ff]">GitHub</span> Profile Stats
-          </span>
-          <a
-            href={SITE.repoUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-sm text-[#8b949e] hover:text-[#c9d1d9] transition-colors"
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
-            </svg>
-            View on GitHub
-          </a>
-        </div>
-      </header>
+    <>
+      <ReactiveWordField />
+      <main className="site-content min-h-screen">
+        <header className="border-b border-[#21262d] bg-[#010409]/90 backdrop-blur-sm">
+          <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+            <span className="text-lg font-bold tracking-tight">
+              <span className="text-[#58a6ff]">GitHub</span> Profile Stats
+            </span>
+            <a
+              href={SITE.repoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-sm text-[#8b949e] hover:text-[#c9d1d9] transition-colors"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+              </svg>
+              View on GitHub
+            </a>
+          </div>
+        </header>
 
-      <section className="border-b border-[#21262d] bg-gradient-to-b from-[#010409] to-[#0d1117]">
+        <section className="border-b border-[#21262d] bg-gradient-to-b from-[#010409]/92 to-[#0d1117]/82 backdrop-blur-[1px]">
         <div className="mx-auto max-w-6xl px-6 py-20 text-center">
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl animate-slide-up">
             GitHub Profile Stats for Your README
@@ -466,6 +469,7 @@ export default function Home() {
           </div>
         </div>
       </footer>
-    </main>
+      </main>
+    </>
   );
 }

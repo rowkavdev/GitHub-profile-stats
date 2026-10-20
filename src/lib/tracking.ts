@@ -1,6 +1,12 @@
 import { Redis } from "@upstash/redis";
 
 const USERS_SET_KEY = "embed:users";
+const RECENT_USER_DAYS = 7;
+const DAILY_USERS_RETENTION_SECONDS = 8 * 24 * 60 * 60;
+
+function dailyUsersKey(date: Date): string {
+  return `embed:users:daily:${date.toISOString().slice(0, 10)}`;
+}
 
 function getRedis(): Redis | null {
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
@@ -12,11 +18,18 @@ function getRedis(): Redis | null {
   });
 }
 
-/** Record a username that used the embed (fire-and-forget). */
-export async function trackUser(username: string): Promise<void> {
+/** Record a username in the all-time count and today's short-lived public set. */
+export async function trackUser(username: string, date = new Date()): Promise<void> {
   const redis = getRedis();
   if (!redis) return;
-  await redis.sadd(USERS_SET_KEY, username.toLowerCase());
+  const normalized = username.toLowerCase();
+  const dailyKey = dailyUsersKey(date);
+  await redis
+    .pipeline()
+    .sadd(USERS_SET_KEY, normalized)
+    .sadd(dailyKey, normalized)
+    .expire(dailyKey, DAILY_USERS_RETENTION_SECONDS)
+    .exec();
 }
 
 /** Return the number of unique usernames that have ever used the embed. */
@@ -24,6 +37,24 @@ export async function getUserCount(): Promise<number> {
   const redis = getRedis();
   if (!redis) return 0;
   return await redis.scard(USERS_SET_KEY);
+}
+
+/** Return distinct public GitHub usernames whose cards rendered in the last 7 UTC days. */
+export async function getRecentUsers(date = new Date()): Promise<string[]> {
+  const redis = getRedis();
+  if (!redis) return [];
+
+  const dailyUsers = await Promise.all(
+    Array.from({ length: RECENT_USER_DAYS }, (_, dayOffset) => {
+      const day = new Date(date);
+      day.setUTCDate(day.getUTCDate() - dayOffset);
+      return redis.smembers<string[]>(dailyUsersKey(day));
+    }),
+  );
+
+  return [...new Set(dailyUsers.flat())].sort((left, right) =>
+    left.localeCompare(right),
+  );
 }
 
 const VISITS_KEY = "embed:visits";
