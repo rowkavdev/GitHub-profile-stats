@@ -18,5 +18,9 @@ test('sparkline title reserves space for the latest count at minimum width', () 
   assert.match(svg, /Today: 12345/);
 });
 test('sparkline default title stays unchanged when it fits', () => {
-  assert.match(renderSparkline(days, theme, { ...options, width: 320 }), /class="sl-title">Last 1 days<\/text>/);
+  assert.match(renderSparkline(days, theme, { ...options, width: 320 }), /class="sl-title">Last 1 day<\/text>/);
+});
+test('sparkline default title keeps the plural for more than one day', () => {
+  const two = [...days, { date: '2026-10-02', contributionCount: 1 }];
+  assert.match(renderSparkline(two, theme, { ...options, width: 320 }), /class="sl-title">Last 2 days<\/text>/);
 });
