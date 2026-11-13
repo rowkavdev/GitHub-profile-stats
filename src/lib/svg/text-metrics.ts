@@ -1,4 +1,20 @@
+/** East Asian wide and fullwidth characters (CJK, kana, Hangul, fullwidth forms). */
+function isWideChar(ch: string): boolean {
+  const cp = ch.codePointAt(0) ?? 0;
+  return (
+    (cp >= 0x1100 && cp <= 0x115f) ||
+    (cp >= 0x2e80 && cp <= 0xa4cf) ||
+    (cp >= 0xac00 && cp <= 0xd7a3) ||
+    (cp >= 0xf900 && cp <= 0xfaff) ||
+    (cp >= 0xfe30 && cp <= 0xfe6f) ||
+    (cp >= 0xff00 && cp <= 0xff60) ||
+    (cp >= 0xffe0 && cp <= 0xffe6) ||
+    (cp >= 0x20000 && cp <= 0x3fffd)
+  );
+}
+
 export function charWidth(ch: string, fontSize: number): number {
+  if (isWideChar(ch)) return fontSize;
   const c = ch.toLowerCase();
   if ("ijlt!:;|".includes(c)) return fontSize * 0.27;
   if ("frskce".includes(c)) return fontSize * 0.42;
