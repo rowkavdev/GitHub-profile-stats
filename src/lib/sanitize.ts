@@ -24,12 +24,14 @@ export function isValidHex(hex: string): boolean {
 }
 
 /**
- * Sanitize a GitHub username. GitHub usernames allow alphanumeric + single hyphens,
- * 1-39 characters, cannot start/end with hyphen.
+ * Sanitize a GitHub username. GitHub usernames are alphanumeric plus hyphens,
+ * 1-39 characters, and cannot start with a hyphen. Trailing and consecutive
+ * hyphens occur on real legacy accounts (e.g. "Nek-"), so they are accepted;
+ * the GitHub API remains the final arbiter of whether an account exists.
  */
 export function sanitizeUsername(username: string): string | null {
   const clean = username.trim();
-  if (/^[a-zA-Z0-9]([a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$/.test(clean)) {
+  if (/^[a-zA-Z0-9][a-zA-Z0-9-]{0,38}$/.test(clean)) {
     return clean;
   }
   return null;
