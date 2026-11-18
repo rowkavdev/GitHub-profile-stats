@@ -11,11 +11,11 @@ const requireFromRoute = createRequire(routePath);
 function loadRoute() {
   const source = readFileSync(routePath, 'utf8');
   const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2022 } }).outputText;
-  const module = new Module(routePath);
-  module.filename = routePath;
-  module.paths = Module._nodeModulePaths(join(process.cwd(), 'src/app/api/profile/png'));
-  module.require = (id) => {
-    if (id === 'next/og') return { ImageResponse: class extends Response { constructor() { super('png', { headers: { 'Content-Type': 'image/png' } }); } } };
+  const loadedModule = new Module(routePath);
+  loadedModule.filename = routePath;
+  loadedModule.paths = Module._nodeModulePaths(join(process.cwd(), 'src/app/api/profile/png'));
+  loadedModule.require = (id) => {
+    if (id === '@/lib/svg-to-png') return { svgToPng: () => new Uint8Array([0x89, 0x50, 0x4e, 0x47]) };
     if (id === '@/lib/profile-card') return {
       parseRepository: (value) => value === 'octocat/Hello-World' ? { owner: 'octocat', repo: 'Hello-World' } : null,
       resolveProfileCardOptions: () => ({ width: 1200, height: 627 }),
@@ -27,8 +27,8 @@ function loadRoute() {
     if (id === '@/lib/cache') return requireFromRoute(join(process.cwd(), 'src/lib/cache.ts'));
     return requireFromRoute(id);
   };
-  module._compile(compiled, routePath);
-  return module.exports;
+  loadedModule._compile(compiled, routePath);
+  return loadedModule.exports;
 }
 
 test('successful PNG card sets edge cache headers, matching the SVG default profile', async () => {
@@ -36,6 +36,7 @@ test('successful PNG card sets edge cache headers, matching the SVG default prof
   const url = 'https://ghstats.dev/api/profile/png?repo=octocat%2FHello-World';
   const response = await GET({ nextUrl: new URL(url) });
   assert.equal(response.status, 200);
+  assert.equal(response.headers.get('Content-Type'), 'image/png');
   assert.match(response.headers.get('Cache-Control') ?? '', /s-maxage=1800/);
   assert.match(response.headers.get('CDN-Cache-Control') ?? '', /s-maxage=1800/);
   assert.match(response.headers.get('Vercel-CDN-Cache-Control') ?? '', /s-maxage=1800/);

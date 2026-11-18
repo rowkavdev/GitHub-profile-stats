@@ -24,12 +24,15 @@ export function renderBadge(
   const labelBg = typeof color === "string" ? "555" : (color.labelBg ?? "555");
   const text = typeof color === "string" ? "fff" : (color.text ?? "fff");
 
-  const displayLabel = cfg.uppercase ? safeLabel.toUpperCase() : safeLabel;
-  const displayValue = cfg.uppercase ? safeValue.toUpperCase() : safeValue;
+  // Transform visible text before XML escaping so entities remain valid.
+  const labelText = cfg.uppercase ? label.toUpperCase() : label;
+  const valueText = cfg.uppercase ? value.toUpperCase() : value;
+  const displayLabel = escapeXml(labelText);
+  const displayValue = escapeXml(valueText);
 
   if (cfg.transparent) {
-    const labelTextWidth = Math.round(displayLabel.length * cfg.charWidth);
-    const valueTextWidth = Math.round(displayValue.length * cfg.charWidth);
+    const labelTextWidth = Math.round(labelText.length * cfg.charWidth);
+    const valueTextWidth = Math.round(valueText.length * cfg.charWidth);
     const totalWidth = labelTextWidth + valueTextWidth + cfg.pad * 2 + 4;
 
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${totalWidth}" height="${cfg.height}" role="img" aria-label="${safeLabel}: ${safeValue}">
@@ -42,10 +45,10 @@ export function renderBadge(
   }
 
   const labelWidth = Math.round(
-    displayLabel.length * cfg.charWidth + cfg.pad * 2,
+    labelText.length * cfg.charWidth + cfg.pad * 2,
   );
   const valueWidth = Math.round(
-    displayValue.length * cfg.charWidth + cfg.pad * 2,
+    valueText.length * cfg.charWidth + cfg.pad * 2,
   );
   const totalWidth = labelWidth + valueWidth;
 

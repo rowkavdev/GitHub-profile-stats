@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
       error instanceof Error ? error.message : "An unexpected error occurred.";
     return new Response(renderErrorCard(message, theme), {
       status: 500,
-      headers,
+      headers: { ...headers, ...getCacheHeaders("no-store") },
     });
   }
 }

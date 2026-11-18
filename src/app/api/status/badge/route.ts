@@ -1,6 +1,6 @@
 import { renderBadge, resolveBadgeStyle } from "@/lib/svg/badge";
 import { getCacheHeaders } from "@/lib/cache";
-import { SITE, SITE_ROUTES } from "@/lib/site";
+import { SITE_ROUTES } from "@/lib/site";
 import {
   formatMilliseconds,
   formatPercentage,
@@ -88,7 +88,7 @@ export async function GET(request: Request) {
         "Vercel-CDN-Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
       },
     });
-  } catch (error) {
+  } catch {
     const fallback = renderBadge(
       getBadgeLabel(metric, period),
       "unknown",

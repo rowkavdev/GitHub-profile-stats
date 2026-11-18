@@ -34,7 +34,7 @@ test("totals public repos of user and opt-in owner with one run-count call per r
 });
 
 test("failure refuses partial totals", async () => {
-  globalThis.fetch = async (url, init) => {
+  globalThis.fetch = async (url) => {
     if (url.endsWith("/graphql")) return new Response(JSON.stringify({ data: { repositoryOwner: { repositories: {
       nodes: [{ name: "a", owner: { login: "user" } }, { name: "b", owner: { login: "user" } }],
       pageInfo: { hasNextPage: false, endCursor: null },

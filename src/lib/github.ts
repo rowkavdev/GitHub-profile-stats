@@ -43,6 +43,7 @@ query($username: String!) {
     repositories(
       first: 100
       ownerAffiliations: OWNER
+      privacy: PUBLIC
       orderBy: { field: STARGAZERS, direction: DESC }
       isFork: false
     ) {
@@ -84,32 +85,28 @@ function calculateStreak(days: ContributionDay[]): {
   current: number;
   longest: number;
 } {
-  const sorted = [...days].sort((a, b) => a.date.localeCompare(b.date));
+  // Streaks follow calendar dates, not neighbouring array entries, so a
+  // missing or stale date ends a run.
+  const dayNumber = (date: string) => Math.floor(Date.parse(`${date}T00:00:00Z`) / 86_400_000);
+  const active = [...new Set(
+    days.filter((day) => day.contributionCount > 0).map((day) => dayNumber(day.date)),
+  )].sort((a, b) => a - b);
+  const todayNumber = Math.floor(Date.now() / 86_400_000);
+  const past = active.filter((n) => n <= todayNumber);
 
   let longest = 0;
-  let currentRun = 0;
-  for (const day of sorted) {
-    if (day.contributionCount > 0) {
-      currentRun++;
-      longest = Math.max(longest, currentRun);
-    } else {
-      currentRun = 0;
-    }
+  let run = 0;
+  for (let i = 0; i < past.length; i++) {
+    run = i > 0 && past[i] === past[i - 1] + 1 ? run + 1 : 1;
+    longest = Math.max(longest, run);
   }
 
+  // An empty today does not end a streak that ran through yesterday.
   let current = 0;
-  const today = new Date().toISOString().split("T")[0];
-
-  for (let i = sorted.length - 1; i >= 0; i--) {
-    const day = sorted[i];
-    if (day.date > today) continue;
-
-    if (day.contributionCount > 0) {
-      current++;
-    } else {
-      if (day.date === today) continue;
-      break;
-    }
+  const last = past[past.length - 1];
+  if (last !== undefined && last >= todayNumber - 1) {
+    current = 1;
+    for (let i = past.length - 2; i >= 0 && past[i] === past[i + 1] - 1; i--) current++;
   }
 
   return { current, longest };
@@ -145,8 +142,11 @@ function calculateMostActiveDay(days: ContributionDay[]): string {
     const dow = new Date(d.date + "T00:00:00").getDay();
     totals[dow] += d.contributionCount;
   }
-  const maxIdx = totals.indexOf(Math.max(...totals));
-  return DAY_NAMES[maxIdx];
+  const best = Math.max(...totals);
+  // With no contributions every day ties at 0, and indexOf would report
+  // Sunday as the most active day.
+  if (best === 0) return "None";
+  return DAY_NAMES[totals.indexOf(best)];
 }
 
 function calculateAvgCommitsPerDay(days: ContributionDay[]): number {
@@ -444,6 +444,7 @@ query($username: String!) {
     repositories(
       first: 50
       ownerAffiliations: OWNER
+      privacy: PUBLIC
       isFork: false
       orderBy: { field: UPDATED_AT, direction: DESC }
     ) {

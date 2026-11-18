@@ -64,7 +64,7 @@ export function getVisibleStats(
       key: "streak",
       label: "Current Streak",
       short: "Streak",
-      value: `${stats.currentStreak} days`,
+      value: `${stats.currentStreak} ${stats.currentStreak === 1 ? "day" : "days"}`,
       icon: "fire",
     },
     {
@@ -78,7 +78,7 @@ export function getVisibleStats(
       key: "trend",
       label: "Weekly Trend",
       short: "Trend",
-      value: `${formatNumber(stats.commitsThisWeek)} commits`,
+      value: `${formatNumber(stats.commitsThisWeek)} ${stats.commitsThisWeek === 1 ? "commit" : "commits"}`,
       icon: "trend",
       trend: formatTrend(stats.weeklyTrend),
     },

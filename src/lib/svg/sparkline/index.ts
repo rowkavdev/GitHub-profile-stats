@@ -2,6 +2,7 @@ import { ContributionDay } from "../../types";
 import { ThemeConfig } from "@/lib/themes/types";
 import { escapeXml } from "../../sanitize";
 import { renderErrorCard } from "../svg-primitives";
+import { estimateTextWidth, truncateToWidth } from "../text-metrics";
 
 export interface SparklineOptions {
   days: number;
@@ -61,6 +62,10 @@ export function renderSparkline(
 
   const title = options.custom_title ?? `Last ${recent.length} days`; // fallback title
   const latestVal = values[values.length - 1];
+  const latestLabel = `Today: ${latestVal}`;
+  // The width helper is approximate; leave slack for bold system fonts.
+  const titleWidth = Math.max(0, contentW - estimateTextWidth(latestLabel, 11) * 1.2 - 12);
+  const visibleTitle = truncateToWidth(title, titleWidth / 1.2, 12);
 
   const border = options.hide_border
     ? ""
@@ -76,8 +81,8 @@ export function renderSparkline(
   <path d="${areaPath}" fill="${fillColor}" opacity="0.12" />
   <path d="${linePath}" fill="none" stroke="${lineColor}" stroke-width="2.2" stroke-linecap="round" />
   <circle cx="${lastPoint.x}" cy="${lastPoint.y}" r="3.6" fill="${lineColor}" stroke="${theme.bg}" stroke-width="1" />
-  <text x="${PAD_X}" y="${TITLE_Y}" class="sl-title">${escapeXml(title)}</text>
-  <text x="${WIDTH - PAD_X}" y="${TITLE_Y}" class="sl-value" text-anchor="end">Today: ${latestVal}</text>
+  <text x="${PAD_X}" y="${TITLE_Y}" class="sl-title">${escapeXml(visibleTitle)}</text>
+  <text x="${WIDTH - PAD_X}" y="${TITLE_Y}" class="sl-value" text-anchor="end">${latestLabel}</text>
   
 </svg>`;
 }
