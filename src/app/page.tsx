@@ -155,7 +155,7 @@ export default function Home() {
       <section className="border-b border-[#21262d] bg-gradient-to-b from-[#010409] to-[#0d1117]">
         <div className="mx-auto max-w-6xl px-6 py-20 text-center">
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl animate-slide-up">
-            GitHub Stats for Your README
+            GitHub Profile Stats for Your README
           </h1>
           <p
             className="mt-4 text-lg text-[#8b949e] max-w-2xl mx-auto animate-slide-up"
@@ -188,6 +188,45 @@ export default function Home() {
           >
             <HeroCard />
           </div>
+        </div>
+      </section>
+
+      <section className="border-b border-[#21262d]">
+        <div className="mx-auto max-w-6xl px-6 py-16">
+          <h2 className="text-2xl font-bold">A live GitHub stats card for your profile</h2>
+          <p className="mt-4 max-w-3xl text-[#8b949e]">
+            GHStats turns your public GitHub activity into an SVG card you can
+            embed in a profile README. Show the numbers that matter to you,
+            including commits, stars, pull requests, contributions, streaks,
+            repositories and followers. The card refreshes as your public
+            activity changes, so you do not need to edit your README each time.
+          </p>
+          <div className="mt-8 grid gap-5 md:grid-cols-3">
+            <div className="rounded-lg border border-[#30363d] bg-[#161b22] p-5">
+              <h3 className="font-semibold text-[#c9d1d9]">Profile stats card</h3>
+              <p className="mt-2 text-sm text-[#8b949e]">
+                Put your GitHub user stats in one card, then choose which
+                metrics and theme to display.
+              </p>
+            </div>
+            <div className="rounded-lg border border-[#30363d] bg-[#161b22] p-5">
+              <h3 className="font-semibold text-[#c9d1d9]">Top languages</h3>
+              <p className="mt-2 text-sm text-[#8b949e]">
+                Add a separate languages card when you want your profile to
+                show the languages in your public repositories.
+              </p>
+            </div>
+            <div className="rounded-lg border border-[#30363d] bg-[#161b22] p-5">
+              <h3 className="font-semibold text-[#c9d1d9]">Badges and activity</h3>
+              <p className="mt-2 text-sm text-[#8b949e]">
+                Use a compact stats badge or contribution sparkline when a
+                full-size card does not fit your README.
+              </p>
+            </div>
+          </div>
+          <a href="#try" className="mt-7 inline-block text-sm font-medium text-[#58a6ff] hover:underline">
+            Build your GitHub profile card →
+          </a>
         </div>
       </section>
 
@@ -268,19 +307,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="try" className="border-b border-[#21262d]">
-        <div className="mx-auto max-w-6xl px-6 py-16">
-          <div className="flex flex-col sm:flex-row sm:items-end gap-4 mb-4">
-            <div>
-              <h2 className="text-2xl font-bold mb-1">Try It Out</h2>
-              <p className="text-[#8b949e]">
-                Customise your card and copy the embed code.
-              </p>
-            </div>
-          </div>
-          <CardPreview />
-        </div>
-      </section>
+      <CardPreview />
 
       <section id="params" className="border-b border-[#21262d]">
         <div className="mx-auto max-w-6xl px-6 py-16">

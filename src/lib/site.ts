@@ -1,9 +1,9 @@
 export const SITE = {
   url: "https://ghstats.dev",
   name: "GitHub Profile Stats",
-  title: "GitHub Profile Stats — Beautiful Stats Cards for Your README",
+  title: "GitHub Profile Stats & README Cards | GHStats",
   description:
-    "Generate beautiful, dynamically generated GitHub stats cards for your profile README. 13 stats, 18 themes, fully customizable SVG cards — just paste one line. No tokens, no setup, no deployment needed. Free and open source.",
+    "Create a live GitHub stats card for your profile README. Show commits, stars, streaks and more; choose a theme, preview the card, then copy the embed code. Free and open source.",
   authorName: "rowkav09",
   authorUrl: "https://github.com/rowkav09",
   creator: "rowkav09",
