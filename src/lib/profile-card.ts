@@ -133,7 +133,10 @@ export function resolveProfileCardOptions(params: URLSearchParams): ProfileCardO
   const type = PROFILE_CARD_TYPES.includes(params.get("type") as ProfileCardType) ? params.get("type") as ProfileCardType : "repo";
   const themeName = params.get("theme") || "github";
   const preset = Object.hasOwn(PROFILE_THEMES, themeName) ? PROFILE_THEMES[themeName] : PROFILE_THEMES.github;
-  const custom = (key: keyof ProfileCardTheme) => sanitizeHexParam(params.get(key)) || preset[key];
+  const custom = (key: keyof ProfileCardTheme) => {
+    const hex = sanitizeHexParam(params.get(key));
+    return hex ? `#${hex}` : preset[key];
+  };
   const style = PROFILE_CARD_STYLES.includes(params.get("style") as ProfileCardStyle) ? params.get("style") as ProfileCardStyle : "github";
   const compact = type === "compact" && style === "github";
   const heights = { github: 500, compact: 430, split: 550, editorial: 550, minimal: 400 };
@@ -169,11 +172,24 @@ export function parseRepository(value: string | null): { owner: string; repo: st
   return match ? { owner: match[1], repo: match[2] } : null;
 }
 
-async function repositoryPageCount(url: string, headers: Record<string,string>): Promise<number> {
+async function repositoryPageCount(url: string, headers: Record<string,string>, allowEmptyCommits = false): Promise<number> {
   const response = await fetch(url, {headers, cache: "no-store"});
-  if (!response.ok) throw new Error(`GitHub repository count request failed: ${response.status}`);
+  // Status and Link-header branches try to cancel a present reply body.
+  // The JSON and explicit empty-commits 409 paths consume their bodies.
+  // Cancellation is best-effort: do not await its promise, and ignore errors.
+  // A custom synchronous cancel method may still block.
+  const discardBody = () => { try { Promise.resolve(response.body?.cancel?.()).catch(() => {}); } catch {} };
+  // Only the commits endpoint's explicit empty-repository response is a zero.
+  // Other conflicts include temporarily unavailable repositories and must fail.
+  if (allowEmptyCommits && response.status === 409) {
+    const error: unknown = await response.json().catch(() => null);
+    if (error !== null && typeof error === "object" && "message" in error && error.message === "Git Repository is empty.") return 0;
+  }
+  if (!response.ok) { discardBody(); throw new Error(`GitHub repository count request failed: ${response.status}`); }
+  if (response.status === 204) { discardBody(); return 0; }
   const last = (response.headers.get("link") || "").match(/[?&]page=(\d+)>; rel="last"/);
   if (last) {
+    discardBody();
     const count = Number(last[1]);
     if (!Number.isSafeInteger(count) || count < 0) throw new Error("GitHub returned an invalid repository count");
     return count;
@@ -214,7 +230,7 @@ export async function fetchRepositoryCardData(owner: string, repo: string): Prom
     throw new Error("GitHub returned an incomplete issue count");
   }
   const contributors = await repositoryPageCount(`${json.contributors_url}?per_page=1&anon=true`, headers);
-  const commits = await repositoryPageCount(`${json.commits_url.replace("{/sha}", "")}?per_page=1`, headers);
+  const commits = await repositoryPageCount(`${json.commits_url.replace("{/sha}", "")}?per_page=1`, headers, true);
   const languages = await repositoryLanguages(owner, repo, headers);
   return { owner: json.owner.login, name: json.name, description: json.description || "", ownerAvatarUrl: json.owner.avatar_url, avatarDataUri: "", contributors, commits, openIssues: issues.total_count, stars: json.stargazers_count, forks: json.forks_count, languages };
 }
