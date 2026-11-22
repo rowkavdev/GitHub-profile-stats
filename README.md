@@ -271,11 +271,11 @@ attacker can make inside the 90-day window.
 
 Public `/api/status`, `/api/status/badge`, and `/status` read the latest stored
 report; reads do not probe services or append uptime history. Configure
-`CRON_SECRET` on the deployment and have an hourly scheduler call
+`CRON_SECRET` on the deployment and have an hourly scheduler send a POST to
 `/api/status/collect` with `Authorization: Bearer <CRON_SECRET>`. A Redis atomic
-lock allows at most one collection per hour, including concurrent calls.
-Missing configuration fails closed. Before deploying this change, configure
-and verify the scheduler; do not stop the old collector first. The uptime job
+lock allows one collection attempt per UTC hour, including concurrent calls.
+Missing configuration fails closed. A failed attempt can be retried in the
+next UTC hour. Configure the matching secrets before deploying this change. The uptime job
 calls the authenticated collector and checks the body with
 `scripts/check-uptime.mjs`. Set the same `CRON_SECRET` as a GitHub Actions
 repository secret and Vercel environment variable. Reports older than two hours

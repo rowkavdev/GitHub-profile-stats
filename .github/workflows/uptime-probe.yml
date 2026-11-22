@@ -21,5 +21,5 @@ jobs:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
           test -n "$CRON_SECRET" || { echo "CRON_SECRET is not configured" >&2; exit 1; }
-          curl --fail --silent --show-error --retry 2 -H "Authorization: Bearer $CRON_SECRET" https://ghstats.dev/api/status/collect -o /tmp/status.json
+          curl --fail --silent --show-error --request POST -H "Authorization: Bearer $CRON_SECRET" https://ghstats.dev/api/status/collect -o /tmp/status.json
           node scripts/check-uptime.mjs < /tmp/status.json

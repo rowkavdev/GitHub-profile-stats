@@ -1,9 +1,10 @@
 import { renderBadge, resolveBadgeStyle } from "@/lib/svg/badge";
 import { getCacheHeaders } from "@/lib/cache";
-import { SITE_ROUTES } from "@/lib/site";
 import {
   formatMilliseconds,
   formatPercentage,
+  readStatusReport,
+  STATUS_REPORT_MAX_AGE_SECONDS,
   type StatusReport,
   type StatusLevel,
 } from "@/lib/status";
@@ -21,22 +22,6 @@ function toneForStatus(status: StatusLevel): string {
     case "down":
       return "f85149";
   }
-}
-
-async function fetchStatusReport(request: Request): Promise<StatusReport> {
-  const statusUrl = new URL(SITE_ROUTES.apiStatus, request.url);
-  const response = await fetch(statusUrl, {
-    cache: "no-store",
-    headers: {
-      "x-status-badge": "1",
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Status API returned ${response.status}`);
-  }
-
-  return (await response.json()) as StatusReport;
 }
 
 function getBadgeValue(
@@ -68,7 +53,8 @@ export async function GET(request: Request) {
   const period = params.get("period") === "7d" ? "7d" : "24h";
 
   try {
-    const report = await fetchStatusReport(request);
+    const report = await readStatusReport();
+    if (!report) throw new Error("No current status report");
     const badgeValue = getBadgeValue(report, metric, period);
     const accent = toneForStatus(report.overall.status);
 
@@ -79,13 +65,21 @@ export async function GET(request: Request) {
       style,
     );
 
+    const expiresAt = Date.parse(report.checkedAt) + STATUS_REPORT_MAX_AGE_SECONDS * 1000;
+    const secondsLeft = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
+    const cacheHeaders = secondsLeft > 0
+      ? {
+          "Cache-Control": `public, max-age=${Math.min(60, secondsLeft)}, s-maxage=${Math.min(300, secondsLeft)}`,
+          "CDN-Cache-Control": `public, s-maxage=${Math.min(300, secondsLeft)}`,
+          "Vercel-CDN-Cache-Control": `public, s-maxage=${Math.min(300, secondsLeft)}`,
+        }
+      : getCacheHeaders("no-store");
+
     return new Response(svg, {
       status: 200,
       headers: {
         "Content-Type": "image/svg+xml",
-        "Cache-Control": "public, max-age=60, s-maxage=300, stale-while-revalidate=600",
-        "CDN-Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
-        "Vercel-CDN-Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+        ...cacheHeaders,
       },
     });
   } catch {
