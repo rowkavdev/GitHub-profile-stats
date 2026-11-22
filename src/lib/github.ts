@@ -322,7 +322,8 @@ function fetchExtraOwners(extraOwners: string[], token: string): Promise<OwnerRe
 type ContributionTotals = { totalCommitContributions: number; totalIssueContributions: number; totalPullRequestContributions: number };
 
 async function fetchAllTimeTotals(username: string, token: string, years: number[]): Promise<ContributionTotals> {
-  const collections = years.map((year) => `y${year}: contributionsCollection(from: "${year}-01-01T00:00:00Z", to: "${year + 1}-01-01T00:00:00Z") { totalCommitContributions totalIssueContributions totalPullRequestContributions }`).join("\n");
+  // GitHub includes the end date, so adjacent years must not share January 1.
+  const collections = years.map((year) => `y${year}: contributionsCollection(from: "${year}-01-01T00:00:00Z", to: "${year}-12-31T23:59:59Z") { totalCommitContributions totalIssueContributions totalPullRequestContributions }`).join("\n");
   const response = await fetch(GITHUB_GRAPHQL, { method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json", "User-Agent": "github-profile-stats" }, body: JSON.stringify({ query: `query($username: String!) { user(login: $username) { ${collections} } }`, variables: { username } }), cache: "no-store" });
   if (!response.ok) throw new Error(getGitHubAuthError(response.status));
   const json = await response.json();
