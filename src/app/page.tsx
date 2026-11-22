@@ -116,16 +116,16 @@ const PARAMS = [
 
 const HIDE_KEYS = [
   { key: "stars", desc: "Total Stars Earned" },
-  { key: "commits", desc: "Total Commits (year)" },
+  { key: "commits", desc: "Commits (past year or all time)" },
   { key: "prs", desc: "Pull Requests" },
   { key: "issues", desc: "Issues Opened" },
   { key: "streak", desc: "Current Streak" },
-  { key: "week", desc: "Commits This Week" },
-  { key: "trend", desc: "Weekly Trend (+/-)" },
-  { key: "avg", desc: "Avg Commits Per Day" },
+  { key: "week", desc: "Contributions This Week" },
+  { key: "trend", desc: "Weekly Contribution Trend (+/-)" },
+  { key: "avg", desc: "Avg Contributions Per Day" },
   { key: "active_day", desc: "Most Active Day" },
   { key: "grade", desc: "Activity Grade" },
-  { key: "contributions", desc: "Contributions This Year" },
+  { key: "contributions", desc: "Contributions (Past Year)" },
   { key: "repos", desc: "Public Repos" },
   { key: "followers", desc: "Followers" },
 ];

@@ -21,13 +21,13 @@ const ICONS: Record<string, string> = {
 
 const DEMO_STATS = [
   { label: "Total Stars Earned", value: "1,247", icon: "star" },
-  { label: "Total Commits (2026)", value: "3,891", icon: "commit" },
+  { label: "Commits (Past Year)", value: "3,891", icon: "commit" },
   { label: "Pull Requests", value: "186", icon: "pr" },
   { label: "Current Streak", value: "42 days", icon: "fire" },
-  { label: "Weekly Trend", value: "47 commits", icon: "trend" },
-  { label: "Avg Commits / Day", value: "10.7", icon: "clock" },
+  { label: "Weekly Contribution Trend", value: "47", icon: "trend" },
+  { label: "Avg Contributions / Day", value: "10.7", icon: "clock" },
   { label: "Activity Grade", value: "A+", icon: "trophy" },
-  { label: "Contributions This Year", value: "2,847", icon: "graph" },
+  { label: "Contributions (Past Year)", value: "2,847", icon: "graph" },
 ];
 
 function buildDemoSvg(t: (typeof HERO_THEMES)[number]): string {

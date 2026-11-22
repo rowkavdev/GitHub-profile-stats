@@ -37,6 +37,7 @@ export interface ContributionDay {
 }
 
 export interface CardOptions {
+  allTime?: boolean;
   theme: string;
   hide_border: boolean;
   hide_title: boolean;

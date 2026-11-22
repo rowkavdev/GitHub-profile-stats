@@ -22,8 +22,9 @@ export function getVisibleStats(
   stats: GitHubStats,
   hide: string[],
   order?: string[],
+  allTime = false,
 ): StatItem[] {
-  const year = new Date().getFullYear();
+  const commitsLabel = allTime ? "Commits (All Time)" : "Commits (Past Year)";
   const all: (StatItem & { key: string })[] = [
     {
       key: "stars",
@@ -34,8 +35,8 @@ export function getVisibleStats(
     },
     {
       key: "commits",
-      label: `Total Commits (${year})`,
-      short: "Commits",
+      label: commitsLabel,
+      short: commitsLabel,
       value: formatNumber(stats.totalCommits),
       icon: "commit",
     },
@@ -69,23 +70,23 @@ export function getVisibleStats(
     },
     {
       key: "week",
-      label: "Commits This Week",
-      short: "This Week",
+      label: "Contributions This Week",
+      short: "Contributions This Week",
       value: formatNumber(stats.commitsThisWeek),
       icon: "calendar",
     },
     {
       key: "trend",
-      label: "Weekly Trend",
-      short: "Trend",
-      value: `${formatNumber(stats.commitsThisWeek)} ${stats.commitsThisWeek === 1 ? "commit" : "commits"}`,
+      label: "Weekly Contribution Trend",
+      short: "Contribution Trend",
+      value: formatNumber(stats.commitsThisWeek),
       icon: "trend",
       trend: formatTrend(stats.weeklyTrend),
     },
     {
       key: "avg",
-      label: "Avg Commits / Day",
-      short: "Avg / Day",
+      label: "Avg Contributions / Day",
+      short: "Avg Contributions / Day",
       value: `${stats.avgCommitsPerDay}`,
       icon: "clock",
     },
@@ -105,8 +106,8 @@ export function getVisibleStats(
     },
     {
       key: "contributions",
-      label: "Contributions This Year",
-      short: "Contributions",
+      label: "Contributions (Past Year)",
+      short: "Contributions (Past Year)",
       value: formatNumber(stats.contributionsThisYear),
       icon: "graph",
     },

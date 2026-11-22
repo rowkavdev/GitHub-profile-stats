@@ -14,10 +14,10 @@ const base = {
 const options = { theme: 'tokyonight', hide_border: false, hide_title: false, hide: [], show_icons: true, show_ring: true, border_radius: 4, size: 'default', compact_count: 4, show_emoji: false };
 
 function trendRow(svg) {
-  const row = svg.split('<g class="row"').find((chunk) => chunk.includes('Weekly Trend:'));
+  const row = svg.split('<g class="row"').find((chunk) => chunk.includes('Weekly Contribution Trend:'));
   const badge = /translate\(([\d.]+), [\d.]+\)">\s*<path[^>]*\/>\s*<text x="12"[^>]*>([^<]+)</.exec(row);
   const value = /<text x="([\d.]+)"[^>]*class="value" text-anchor="end">([^<]+)</.exec(row);
-  const label = /<text x="([\d.]+)"[^>]*class="label">Weekly Trend:</.exec(row);
+  const label = /<text x="([\d.]+)"[^>]*class="label">Weekly Contribution Trend:</.exec(row);
   return { badgeX: Number(badge[1]), badgeText: badge[2], valueRight: Number(value[1]), value: value[2], labelX: Number(label[1]) };
 }
 
@@ -25,7 +25,7 @@ function trendRow(svg) {
 const valueWidth = (text) => text.length * 8;
 const badgeRight = (row) => row.badgeX + 12 + row.badgeText.length * 6.5;
 
-test('the weekly trend badge never overlaps the right-aligned commits value', () => {
+test('the weekly trend badge never overlaps the right-aligned contribution count', () => {
   for (const [commits, trend] of [[1761, -3], [5, 0], [12, 100], [99999, -100], [1815, 250]]) {
     for (const show_ring of [true, false]) {
       for (const show_icons of [true, false]) {
@@ -39,5 +39,5 @@ test('the weekly trend badge never overlaps the right-aligned commits value', ()
 
 test('the badge stays to the right of its label', () => {
   const row = trendRow(renderCard(base, theme, options));
-  assert.ok(row.badgeX > row.labelX + 'Weekly Trend:'.length * 6);
+  assert.ok(row.badgeX > row.labelX + 'Weekly Contribution Trend:'.length * 6);
 });

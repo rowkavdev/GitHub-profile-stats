@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
   });
 
   const options = {
+    allTime,
     theme: themeName,
     hide_border: params.get("hide_border") === "true",
     hide_title: params.get("hide_title") === "true",
