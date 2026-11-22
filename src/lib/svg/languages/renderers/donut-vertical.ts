@@ -45,7 +45,7 @@ export default function renderDonutVerticalLanguageChart(
     const innerR = RADIUS * RING;
 
     if (angle >= 359.999) {
-      return `<circle cx="${CX}" cy="${CY}" r="${RADIUS}" fill="none" stroke="${lang.color ?? "#586069"}" stroke-width="${RADIUS - innerR}"/>`;
+      return `<circle cx="${CX}" cy="${CY}" r="${(RADIUS + innerR) / 2}" fill="none" stroke="${lang.color ?? "#586069"}" stroke-width="${RADIUS - innerR}"/>`;
     }
 
     const ox1 = CX + RADIUS * Math.cos(toRad(startAngle));
