@@ -13,7 +13,7 @@ function renderCompactCard(
 ): string {
   const count = options.compact_count;
   const COLS = count === 4 ? 2 : 3;
-  const visible = getVisibleStats(stats, options.hide, options.order).slice(
+  const visible = getVisibleStats(stats, options.hide, options.order, options.allTime).slice(
     0,
     count,
   );
@@ -111,7 +111,7 @@ export function renderCard(
     return renderCompactCard(stats, theme, options);
   }
 
-  const visible = getVisibleStats(stats, options.hide, options.order);
+  const visible = getVisibleStats(stats, options.hide, options.order, options.allTime);
   const showIcons = options.show_icons;
   const showRing = options.show_ring;
 

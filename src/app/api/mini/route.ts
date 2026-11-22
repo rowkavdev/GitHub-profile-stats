@@ -35,11 +35,11 @@ const METRICS: Record<string, MetricDef> = {
     color: "f97316",
     get: (s) => `${s.currentStreak}d`,
   },
-  week: { label: "This Week", color: "10b981", get: (s) => s.commitsThisWeek },
+  week: { label: "Contributions This Week", color: "10b981", get: (s) => s.commitsThisWeek },
   followers: { label: "Followers", color: "22c55e", get: (s) => s.followers },
   repos: { label: "Repos", color: "0ea5e9", get: (s) => s.publicRepos },
   contributions: {
-    label: "YTD",
+    label: "Past Year Contributions",
     color: "06b6d4",
     get: (s) => s.contributionsThisYear,
   },

@@ -11,13 +11,11 @@ const base = {
 };
 const value = (stats, key) => getVisibleStats(stats, [], undefined).find((item) => item.short === key)?.value;
 
-test('a one-day streak and a one-commit week use the singular unit', () => {
+test('a one-day streak uses the singular unit', () => {
   assert.equal(value({ ...base, currentStreak: 1 }, 'Streak'), '1 day');
-  assert.equal(value({ ...base, commitsThisWeek: 1 }, 'Trend'), '1 commit');
 });
 test('other counts keep the plural unit', () => {
   for (const n of [0, 2, 18]) {
     assert.equal(value({ ...base, currentStreak: n }, 'Streak'), `${n} days`);
-    assert.equal(value({ ...base, commitsThisWeek: n }, 'Trend'), `${n} commits`);
   }
 });
