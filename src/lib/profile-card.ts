@@ -1,7 +1,7 @@
 import { renderSocialLayout, PROFILE_CARD_STYLES, ProfileCardStyle } from "@/lib/social-card-layout";
 export { PROFILE_CARD_STYLES } from "@/lib/social-card-layout";
 import { GitHubStats, LanguageStat } from "@/lib/types";
-import { escapeXml, sanitizeHexParam } from "@/lib/sanitize";
+import { escapeXml, sanitizeHexParam, truncateCodePoints } from "@/lib/sanitize";
 
 export type ProfileCardType = "repo" | "profile" | "compact" | "contributions";
 
@@ -144,8 +144,8 @@ export function resolveProfileCardOptions(params: URLSearchParams): ProfileCardO
     type,
     style,
     theme: { bg: custom("bg"), panel: custom("panel"), text: custom("text"), muted: custom("muted"), accent: custom("accent"), border: custom("border") },
-    title: params.get("title")?.slice(0, 80) || undefined,
-    subtitle: params.get("subtitle")?.slice(0, 140) || undefined,
+    title: truncateCodePoints(params.get("title") ?? "", 80) || undefined,
+    subtitle: truncateCodePoints(params.get("subtitle") ?? "", 140) || undefined,
     showAvatar: params.get("show_avatar") !== "false",
     showLanguages: params.get("show_languages") !== "false",
     width: compact ? 1000 : 1200,
